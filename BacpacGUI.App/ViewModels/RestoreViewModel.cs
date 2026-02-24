@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -100,6 +101,15 @@ public partial class RestoreViewModel : ObservableObject
     partial void OnCreateNewDatabaseChanged(bool value)
     {
         OnPropertyChanged(nameof(IsExistingDatabaseMode));
+
+        if (value && string.IsNullOrWhiteSpace(NewDatabaseName))
+        {
+            var suggestedName = GetDatabaseNameFromBacpacPath(BacpacPath);
+            if (!string.IsNullOrWhiteSpace(suggestedName))
+            {
+                NewDatabaseName = suggestedName;
+            }
+        }
     }
 
     partial void OnIsRunningChanged(bool value)
@@ -362,5 +372,15 @@ public partial class RestoreViewModel : ObservableObject
     private static string NormalizeMessage(string message)
     {
         return message.Trim();
+    }
+
+    private static string GetDatabaseNameFromBacpacPath(string bacpacPath)
+    {
+        if (string.IsNullOrWhiteSpace(bacpacPath))
+        {
+            return string.Empty;
+        }
+
+        return Path.GetFileNameWithoutExtension(bacpacPath);
     }
 }

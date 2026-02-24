@@ -13,6 +13,7 @@
         Width="1160"
         Height="860"
         x:Class="BacpacGUI.App.MainWindow"
+        Icon="/Assets/app-icon-512.png"
         Title="Bacpac GUI"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaChromeHints="PreferSystemChrome">
