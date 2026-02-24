@@ -13,11 +13,14 @@ namespace BacpacGUI.Desktop.ViewModels;
 public partial class RestoreViewModel : ObservableObject
 {
     private const int MaxHighlights = 300;
+    private const int CompletionQuietPeriodMs = 800;
+    private const int CompletionQuietTimeoutMs = 15000;
 
     private readonly ISqlPackageService _sqlPackageService;
     private readonly IFilePickerService _filePickerService;
     private readonly IUserInteractionService _userInteractionService;
     private CancellationTokenSource? _cancellationTokenSource;
+    private DateTime _lastHighlightTimestampUtc = DateTime.UtcNow;
 
     [ObservableProperty]
     private string bacpacPath = string.Empty;
@@ -65,6 +68,8 @@ public partial class RestoreViewModel : ObservableObject
     private ObservableCollection<string> activityHighlights = new();
 
     public bool IsExistingDatabaseMode => !CreateNewDatabase;
+
+    public bool ShowRestoreCompletedBanner => IsRestoreCompleted && !IsRunning;
 
     public IAsyncRelayCommand BrowseBacpacPathCommand { get; }
 
@@ -119,6 +124,12 @@ public partial class RestoreViewModel : ObservableObject
         StartRestoreCommand.NotifyCanExecuteChanged();
         CancelRestoreCommand.NotifyCanExecuteChanged();
         OpenBacpacFolderCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(ShowRestoreCompletedBanner));
+    }
+
+    partial void OnIsRestoreCompletedChanged(bool value)
+    {
+        OnPropertyChanged(nameof(ShowRestoreCompletedBanner));
     }
 
     partial void OnIsLoadingDatabasesChanged(bool value)
@@ -274,34 +285,51 @@ public partial class RestoreViewModel : ObservableObject
 
         _cancellationTokenSource = new CancellationTokenSource();
         IsRunning = true;
+        BufferedLogProgress? progress = null;
+        var restoreSucceeded = false;
 
         try
         {
             AppendHighlight($"Restore started for '{targetDatabase}'.");
-            await using var progress = new BufferedLogProgress(AppendHighlight, _cancellationTokenSource.Token);
+            progress = new BufferedLogProgress(AppendHighlight, _cancellationTokenSource.Token);
             await _sqlPackageService.ImportAsync(BacpacPath, connectionString, progress, _cancellationTokenSource.Token);
-            AppendHighlight("Restore completed successfully.");
-            CompletionMessage = $"Database ready: {targetDatabase}";
-            IsRestoreCompleted = true;
-            StatusMessage = "Restore complete";
+            await progress.DisposeAsync();
+            progress = null;
+            await WaitForLogQuiescenceAsync();
+            restoreSucceeded = true;
         }
         catch (OperationCanceledException)
         {
             AppendHighlight("Restore canceled.");
             IsRestoreCompleted = false;
             StatusMessage = "Restore canceled";
+            restoreSucceeded = false;
         }
         catch (Exception ex)
         {
             AppendHighlight($"Restore failed: {ex.Message}");
             IsRestoreCompleted = false;
             StatusMessage = "Restore failed";
+            restoreSucceeded = false;
         }
         finally
         {
+            if (progress is not null)
+            {
+                await progress.DisposeAsync();
+            }
+
             _cancellationTokenSource.Dispose();
             _cancellationTokenSource = null;
             IsRunning = false;
+
+            if (restoreSucceeded)
+            {
+                AppendHighlight("Restore completed successfully.");
+                CompletionMessage = $"Database ready: {targetDatabase}";
+                IsRestoreCompleted = true;
+                StatusMessage = "Restore complete";
+            }
         }
     }
 
@@ -346,6 +374,7 @@ public partial class RestoreViewModel : ObservableObject
     {
         ActivityHighlights.Clear();
         LogOutput = string.Empty;
+        _lastHighlightTimestampUtc = DateTime.UtcNow;
     }
 
     private void AppendHighlight(string message)
@@ -357,6 +386,7 @@ public partial class RestoreViewModel : ObservableObject
         }
 
         var entry = $"{DateTime.Now:HH:mm:ss}  {normalized}";
+        _lastHighlightTimestampUtc = DateTime.UtcNow;
 
         ActivityHighlights.Add(entry);
         if (ActivityHighlights.Count > MaxHighlights)
@@ -380,5 +410,28 @@ public partial class RestoreViewModel : ObservableObject
         }
 
         return Path.GetFileNameWithoutExtension(bacpacPath);
+    }
+
+    private async Task WaitForLogQuiescenceAsync()
+    {
+        var startedUtc = DateTime.UtcNow;
+
+        while (true)
+        {
+            var nowUtc = DateTime.UtcNow;
+            var quietForMs = (nowUtc - _lastHighlightTimestampUtc).TotalMilliseconds;
+            if (quietForMs >= CompletionQuietPeriodMs)
+            {
+                return;
+            }
+
+            var waitedMs = (nowUtc - startedUtc).TotalMilliseconds;
+            if (waitedMs >= CompletionQuietTimeoutMs)
+            {
+                return;
+            }
+
+            await Task.Delay(100);
+        }
     }
 }

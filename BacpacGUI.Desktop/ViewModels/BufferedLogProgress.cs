@@ -49,7 +49,7 @@ internal sealed class BufferedLogProgress : IProgress<string>, IAsyncDisposable
         }
         finally
         {
-            FlushQueue();
+            await FlushAllAsync().ConfigureAwait(false);
             _pumpCts.Dispose();
         }
     }
@@ -83,5 +83,30 @@ internal sealed class BufferedLogProgress : IProgress<string>, IAsyncDisposable
                 _appendAction(entry);
             }
         }, DispatcherPriority.Background);
+    }
+
+    private async Task FlushAllAsync()
+    {
+        while (true)
+        {
+            var batch = new List<string>(_maxBatchSize);
+            while (batch.Count < _maxBatchSize && _queue.TryDequeue(out var item))
+            {
+                batch.Add(item);
+            }
+
+            if (batch.Count == 0)
+            {
+                return;
+            }
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                foreach (var entry in batch)
+                {
+                    _appendAction(entry);
+                }
+            }, DispatcherPriority.Background);
+        }
     }
 }

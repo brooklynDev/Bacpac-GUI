@@ -14,11 +14,14 @@ namespace BacpacGUI.Desktop.ViewModels;
 public partial class BackupViewModel : ObservableObject
 {
     private const int MaxHighlights = 300;
+    private const int CompletionQuietPeriodMs = 800;
+    private const int CompletionQuietTimeoutMs = 15000;
 
     private readonly ISqlPackageService _sqlPackageService;
     private readonly IFolderPickerService _folderPickerService;
     private readonly IUserInteractionService _userInteractionService;
     private CancellationTokenSource? _cancellationTokenSource;
+    private DateTime _lastHighlightTimestampUtc = DateTime.UtcNow;
 
     [ObservableProperty]
     private string server = string.Empty;
@@ -69,6 +72,8 @@ public partial class BackupViewModel : ObservableObject
 
     public bool IsConnectionStringMode => UseConnectionStringMode;
 
+    public bool ShowBackupCompletedBanner => IsBackupCompleted && !IsRunning;
+
     public IAsyncRelayCommand LoadDatabasesCommand { get; }
 
     public IAsyncRelayCommand BrowseOutputPathCommand { get; }
@@ -108,6 +113,12 @@ public partial class BackupViewModel : ObservableObject
         StartBackupCommand.NotifyCanExecuteChanged();
         CancelBackupCommand.NotifyCanExecuteChanged();
         OpenOutputFolderCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(ShowBackupCompletedBanner));
+    }
+
+    partial void OnIsBackupCompletedChanged(bool value)
+    {
+        OnPropertyChanged(nameof(ShowBackupCompletedBanner));
     }
 
     partial void OnIsLoadingDatabasesChanged(bool value)
@@ -318,23 +329,26 @@ public partial class BackupViewModel : ObservableObject
 
         _cancellationTokenSource = new CancellationTokenSource();
         IsRunning = true;
+        BufferedLogProgress? progress = null;
+        var backupSucceeded = false;
 
         try
         {
             AppendHighlight($"Backup started for '{dbName}'.");
             AppendHighlight($"Resolved output path: {OutputPath}");
-            await using var progress = new BufferedLogProgress(AppendHighlight, _cancellationTokenSource.Token);
+            progress = new BufferedLogProgress(AppendHighlight, _cancellationTokenSource.Token);
             await _sqlPackageService.ExportAsync(connectionString, resolvedOutputPath, progress, _cancellationTokenSource.Token);
-            AppendHighlight("Backup completed successfully.");
-            CompletionMessage = $"Backup created at: {OutputPath}";
-            IsBackupCompleted = true;
-            StatusMessage = "Backup complete";
+            await progress.DisposeAsync();
+            progress = null;
+            await WaitForLogQuiescenceAsync();
+            backupSucceeded = true;
         }
         catch (OperationCanceledException)
         {
             AppendHighlight("Backup canceled.");
             IsBackupCompleted = false;
             StatusMessage = "Backup canceled";
+            backupSucceeded = false;
         }
         catch (Exception ex)
         {
@@ -342,12 +356,26 @@ public partial class BackupViewModel : ObservableObject
             AppendHighlight(ex.ToString());
             IsBackupCompleted = false;
             StatusMessage = "Backup failed";
+            backupSucceeded = false;
         }
         finally
         {
+            if (progress is not null)
+            {
+                await progress.DisposeAsync();
+            }
+
             _cancellationTokenSource.Dispose();
             _cancellationTokenSource = null;
             IsRunning = false;
+
+            if (backupSucceeded)
+            {
+                AppendHighlight("Backup completed successfully.");
+                CompletionMessage = $"Backup created at: {OutputPath}";
+                IsBackupCompleted = true;
+                StatusMessage = "Backup complete";
+            }
         }
     }
 
@@ -392,6 +420,7 @@ public partial class BackupViewModel : ObservableObject
     {
         ActivityHighlights.Clear();
         LogOutput = string.Empty;
+        _lastHighlightTimestampUtc = DateTime.UtcNow;
     }
 
     private void AppendHighlight(string message)
@@ -403,6 +432,7 @@ public partial class BackupViewModel : ObservableObject
         }
 
         var entry = $"{DateTime.Now:HH:mm:ss}  {normalized}";
+        _lastHighlightTimestampUtc = DateTime.UtcNow;
 
         ActivityHighlights.Add(entry);
         if (ActivityHighlights.Count > MaxHighlights)
@@ -411,6 +441,29 @@ public partial class BackupViewModel : ObservableObject
         }
 
         LogOutput = string.Join(Environment.NewLine, ActivityHighlights);
+    }
+
+    private async Task WaitForLogQuiescenceAsync()
+    {
+        var startedUtc = DateTime.UtcNow;
+
+        while (true)
+        {
+            var nowUtc = DateTime.UtcNow;
+            var quietForMs = (nowUtc - _lastHighlightTimestampUtc).TotalMilliseconds;
+            if (quietForMs >= CompletionQuietPeriodMs)
+            {
+                return;
+            }
+
+            var waitedMs = (nowUtc - startedUtc).TotalMilliseconds;
+            if (waitedMs >= CompletionQuietTimeoutMs)
+            {
+                return;
+            }
+
+            await Task.Delay(100);
+        }
     }
 
     private static string NormalizeMessage(string message)
