@@ -251,6 +251,15 @@ public partial class BackupViewModel : ObservableObject
             return;
         }
 
+        var resolvedOutputPath = PrepareBackupOutputPath(OutputPath, SelectedDatabase);
+        if (string.IsNullOrWhiteSpace(resolvedOutputPath))
+        {
+            AppendHighlight("Output file path is invalid.");
+            StatusMessage = "Output path invalid";
+            return;
+        }
+
+        OutputPath = resolvedOutputPath;
         var connectionString = SqlPackageService.BuildSqlAuthConnectionString(Server, Username, Password, SelectedDatabase);
 
         _cancellationTokenSource = new CancellationTokenSource();
@@ -259,8 +268,9 @@ public partial class BackupViewModel : ObservableObject
         try
         {
             AppendHighlight($"Backup started for '{SelectedDatabase}'.");
+            AppendHighlight($"Resolved output path: {OutputPath}");
             var progress = new Progress<string>(AppendHighlight);
-            await _sqlPackageService.ExportAsync(connectionString, OutputPath, progress, _cancellationTokenSource.Token);
+            await _sqlPackageService.ExportAsync(connectionString, resolvedOutputPath, progress, _cancellationTokenSource.Token);
             AppendHighlight("Backup completed successfully.");
             CompletionMessage = $"Backup created at: {OutputPath}";
             IsBackupCompleted = true;
@@ -275,6 +285,7 @@ public partial class BackupViewModel : ObservableObject
         catch (Exception ex)
         {
             AppendHighlight($"Backup failed: {ex.Message}");
+            AppendHighlight(ex.ToString());
             IsBackupCompleted = false;
             StatusMessage = "Backup failed";
         }
@@ -359,5 +370,40 @@ public partial class BackupViewModel : ObservableObject
     {
         var invalidChars = Path.GetInvalidFileNameChars();
         return new string(value.Select(ch => invalidChars.Contains(ch) ? '_' : ch).ToArray());
+    }
+
+    private static string PrepareBackupOutputPath(string outputPath, string? selectedDatabase)
+    {
+        var trimmed = outputPath.Trim();
+        if (string.IsNullOrWhiteSpace(trimmed))
+        {
+            return string.Empty;
+        }
+
+        if (Directory.Exists(trimmed) || IsDirectoryPathHint(trimmed))
+        {
+            trimmed = Path.Combine(trimmed, BuildDefaultBacpacName(selectedDatabase));
+        }
+        else if (!string.Equals(Path.GetExtension(trimmed), ".bacpac", StringComparison.OrdinalIgnoreCase))
+        {
+            if (string.IsNullOrWhiteSpace(Path.GetExtension(trimmed)))
+            {
+                trimmed = $"{trimmed}.bacpac";
+            }
+        }
+
+        return Path.GetFullPath(trimmed);
+    }
+
+    private static bool IsDirectoryPathHint(string path)
+    {
+        return path.EndsWith(Path.DirectorySeparatorChar) || path.EndsWith(Path.AltDirectorySeparatorChar);
+    }
+
+    private static string BuildDefaultBacpacName(string? databaseName)
+    {
+        var safeDbName = SanitizeFileName(string.IsNullOrWhiteSpace(databaseName) ? "database" : databaseName);
+        var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmm");
+        return $"{safeDbName}-{timestamp}.bacpac";
     }
 }

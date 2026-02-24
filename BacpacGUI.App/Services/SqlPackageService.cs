@@ -13,8 +13,8 @@ public sealed class SqlPackageService : ISqlPackageService
 {
     public async Task ExportAsync(string connectionString, string outputPath, IProgress<string> logProgress, CancellationToken token)
     {
-        var normalizedOutputPath = Path.GetFullPath(outputPath);
         var sourceDatabase = GetDatabaseName(connectionString);
+        var normalizedOutputPath = NormalizeExportPath(outputPath, sourceDatabase);
         var dacServices = CreateDacServices(connectionString, logProgress);
 
         await Task.Run(() =>
@@ -28,7 +28,7 @@ public sealed class SqlPackageService : ISqlPackageService
 
     public async Task ImportAsync(string bacpacPath, string connectionString, IProgress<string> logProgress, CancellationToken token)
     {
-        var normalizedBacpacPath = Path.GetFullPath(bacpacPath);
+        var normalizedBacpacPath = NormalizeImportPath(bacpacPath);
         var targetDatabase = GetDatabaseName(connectionString);
         var dacServices = CreateDacServices(connectionString, logProgress);
 
@@ -143,5 +143,79 @@ public sealed class SqlPackageService : ISqlPackageService
 
         value = string.Empty;
         return false;
+    }
+
+    private static string NormalizeExportPath(string outputPath, string sourceDatabase)
+    {
+        if (string.IsNullOrWhiteSpace(outputPath))
+        {
+            throw new InvalidOperationException("Backup output path is required.");
+        }
+
+        var trimmedPath = outputPath.Trim();
+        if (Directory.Exists(trimmedPath) || IsDirectoryPathHint(trimmedPath))
+        {
+            trimmedPath = Path.Combine(trimmedPath, BuildDefaultBacpacName(sourceDatabase));
+        }
+        else if (string.IsNullOrWhiteSpace(Path.GetExtension(trimmedPath)))
+        {
+            trimmedPath = $"{trimmedPath}.bacpac";
+        }
+
+        var fullPath = Path.GetFullPath(trimmedPath);
+        var fileName = Path.GetFileName(fullPath);
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            throw new InvalidOperationException("Backup output path must include a file name.");
+        }
+
+        var directory = Path.GetDirectoryName(fullPath);
+        if (string.IsNullOrWhiteSpace(directory))
+        {
+            throw new InvalidOperationException("Backup output path must include a valid directory.");
+        }
+
+        Directory.CreateDirectory(directory);
+        return fullPath;
+    }
+
+    private static string NormalizeImportPath(string bacpacPath)
+    {
+        if (string.IsNullOrWhiteSpace(bacpacPath))
+        {
+            throw new InvalidOperationException("Bacpac file path is required.");
+        }
+
+        var fullPath = Path.GetFullPath(bacpacPath.Trim());
+        if (!File.Exists(fullPath))
+        {
+            throw new FileNotFoundException("Bacpac file was not found.", fullPath);
+        }
+
+        return fullPath;
+    }
+
+    private static bool IsDirectoryPathHint(string path)
+    {
+        return path.EndsWith(Path.DirectorySeparatorChar) || path.EndsWith(Path.AltDirectorySeparatorChar);
+    }
+
+    private static string BuildDefaultBacpacName(string databaseName)
+    {
+        var safeDatabaseName = SanitizeFileName(string.IsNullOrWhiteSpace(databaseName) ? "database" : databaseName);
+        return $"{safeDatabaseName}-{DateTime.Now:yyyyMMdd-HHmm}.bacpac";
+    }
+
+    private static string SanitizeFileName(string value)
+    {
+        var invalidChars = Path.GetInvalidFileNameChars();
+        return string.Create(value.Length, (value, invalidChars), static (buffer, state) =>
+        {
+            for (var i = 0; i < state.value.Length; i++)
+            {
+                var ch = state.value[i];
+                buffer[i] = Array.IndexOf(state.invalidChars, ch) >= 0 ? '_' : ch;
+            }
+        });
     }
 }

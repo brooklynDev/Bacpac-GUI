@@ -66,7 +66,8 @@ package_rid() {
     -c Release \
     -r "$rid" \
     --self-contained true \
-    -p:PublishSingleFile=true \
+    -p:PublishSingleFile=false \
+    -p:UseAppHost=true \
     -p:PublishTrimmed=false \
     -p:UsedAvaloniaProducts=; then
     echo "Warning: publish failed for $rid. Skipping package for this RID."
