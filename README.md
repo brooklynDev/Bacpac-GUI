@@ -61,6 +61,12 @@ dotnet run --project BacpacGUI.App/BacpacGUI.App.csproj -p:UsedAvaloniaProducts=
 make publish
 ```
 
+## Releases
+
+Prebuilt artifacts are published on GitHub Releases:
+
+- https://github.com/brooklynDev/Bacpac-GUI/releases
+
 This runs:
 
 - `scripts/package-macos.sh`

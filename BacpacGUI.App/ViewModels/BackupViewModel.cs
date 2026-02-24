@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Data.Common;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -57,6 +58,16 @@ public partial class BackupViewModel : ObservableObject
 
     [ObservableProperty]
     private ObservableCollection<string> activityHighlights = new();
+
+    [ObservableProperty]
+    private bool useConnectionStringMode;
+
+    [ObservableProperty]
+    private string connectionString = string.Empty;
+
+    public bool IsManualMode => !UseConnectionStringMode;
+
+    public bool IsConnectionStringMode => UseConnectionStringMode;
 
     public IAsyncRelayCommand LoadDatabasesCommand { get; }
 
@@ -117,7 +128,14 @@ public partial class BackupViewModel : ObservableObject
         OpenOutputFolderCommand.NotifyCanExecuteChanged();
     }
 
-    private bool CanLoadDatabases() => !IsRunning && !IsLoadingDatabases;
+    partial void OnUseConnectionStringModeChanged(bool value)
+    {
+        OnPropertyChanged(nameof(IsManualMode));
+        OnPropertyChanged(nameof(IsConnectionStringMode));
+        LoadDatabasesCommand.NotifyCanExecuteChanged();
+    }
+
+    private bool CanLoadDatabases() => !UseConnectionStringMode && !IsRunning && !IsLoadingDatabases;
 
     private bool CanBrowseOutputPath() => !IsRunning && !IsLoadingDatabases;
 
@@ -131,6 +149,11 @@ public partial class BackupViewModel : ObservableObject
 
     private async Task LoadDatabasesAsync()
     {
+        if (UseConnectionStringMode)
+        {
+            return;
+        }
+
         ClearHighlights();
         StatusMessage = "Loading databases...";
 
@@ -193,7 +216,12 @@ public partial class BackupViewModel : ObservableObject
                 return;
             }
 
-            var dbName = string.IsNullOrWhiteSpace(SelectedDatabase) ? "database" : SelectedDatabase;
+            var dbName = GetBackupDatabaseNameCandidate();
+            if (string.IsNullOrWhiteSpace(dbName))
+            {
+                dbName = "database";
+            }
+
             var safeDbName = SanitizeFileName(dbName);
             var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmm");
             OutputPath = Path.Combine(folderPath, $"{safeDbName}-{timestamp}.bacpac");
@@ -216,34 +244,6 @@ public partial class BackupViewModel : ObservableObject
         CompletionMessage = string.Empty;
         StatusMessage = "Running backup...";
 
-        if (string.IsNullOrWhiteSpace(Server))
-        {
-            AppendHighlight("Server is required.");
-            StatusMessage = "Server required";
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(Username))
-        {
-            AppendHighlight("Username is required.");
-            StatusMessage = "Username required";
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(Password))
-        {
-            AppendHighlight("Password is required.");
-            StatusMessage = "Password required";
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(SelectedDatabase))
-        {
-            AppendHighlight("Select a database first.");
-            StatusMessage = "Database required";
-            return;
-        }
-
         if (string.IsNullOrWhiteSpace(OutputPath))
         {
             AppendHighlight("Output file path is required.");
@@ -251,7 +251,62 @@ public partial class BackupViewModel : ObservableObject
             return;
         }
 
-        var resolvedOutputPath = PrepareBackupOutputPath(OutputPath, SelectedDatabase);
+        string dbName;
+        string connectionString;
+
+        if (UseConnectionStringMode)
+        {
+            if (string.IsNullOrWhiteSpace(ConnectionString))
+            {
+                AppendHighlight("Connection string is required.");
+                StatusMessage = "Connection string required";
+                return;
+            }
+
+            if (!TryGetDatabaseNameFromConnectionString(ConnectionString, out dbName))
+            {
+                AppendHighlight("Connection string must include Initial Catalog (or Database).");
+                StatusMessage = "Database missing in connection string";
+                return;
+            }
+
+            connectionString = ConnectionString.Trim();
+        }
+        else
+        {
+            if (string.IsNullOrWhiteSpace(Server))
+            {
+                AppendHighlight("Server is required.");
+                StatusMessage = "Server required";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(Username))
+            {
+                AppendHighlight("Username is required.");
+                StatusMessage = "Username required";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(Password))
+            {
+                AppendHighlight("Password is required.");
+                StatusMessage = "Password required";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(SelectedDatabase))
+            {
+                AppendHighlight("Select a database first.");
+                StatusMessage = "Database required";
+                return;
+            }
+
+            dbName = SelectedDatabase;
+            connectionString = SqlPackageService.BuildSqlAuthConnectionString(Server, Username, Password, SelectedDatabase);
+        }
+
+        var resolvedOutputPath = PrepareBackupOutputPath(OutputPath, dbName);
         if (string.IsNullOrWhiteSpace(resolvedOutputPath))
         {
             AppendHighlight("Output file path is invalid.");
@@ -260,14 +315,13 @@ public partial class BackupViewModel : ObservableObject
         }
 
         OutputPath = resolvedOutputPath;
-        var connectionString = SqlPackageService.BuildSqlAuthConnectionString(Server, Username, Password, SelectedDatabase);
 
         _cancellationTokenSource = new CancellationTokenSource();
         IsRunning = true;
 
         try
         {
-            AppendHighlight($"Backup started for '{SelectedDatabase}'.");
+            AppendHighlight($"Backup started for '{dbName}'.");
             AppendHighlight($"Resolved output path: {OutputPath}");
             var progress = new Progress<string>(AppendHighlight);
             await _sqlPackageService.ExportAsync(connectionString, resolvedOutputPath, progress, _cancellationTokenSource.Token);
@@ -405,5 +459,61 @@ public partial class BackupViewModel : ObservableObject
         var safeDbName = SanitizeFileName(string.IsNullOrWhiteSpace(databaseName) ? "database" : databaseName);
         var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmm");
         return $"{safeDbName}-{timestamp}.bacpac";
+    }
+
+    private string GetBackupDatabaseNameCandidate()
+    {
+        if (UseConnectionStringMode && TryGetDatabaseNameFromConnectionString(ConnectionString, out var dbFromConnection))
+        {
+            return dbFromConnection;
+        }
+
+        return SelectedDatabase ?? string.Empty;
+    }
+
+    private static bool TryGetDatabaseNameFromConnectionString(string rawConnectionString, out string databaseName)
+    {
+        databaseName = string.Empty;
+        if (string.IsNullOrWhiteSpace(rawConnectionString))
+        {
+            return false;
+        }
+
+        try
+        {
+            var builder = new DbConnectionStringBuilder { ConnectionString = rawConnectionString.Trim() };
+
+            if (TryGetConnectionValue(builder, "Initial Catalog", out var initialCatalog) &&
+                !string.IsNullOrWhiteSpace(initialCatalog))
+            {
+                databaseName = initialCatalog;
+                return true;
+            }
+
+            if (TryGetConnectionValue(builder, "Database", out var database) &&
+                !string.IsNullOrWhiteSpace(database))
+            {
+                databaseName = database;
+                return true;
+            }
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
+
+        return false;
+    }
+
+    private static bool TryGetConnectionValue(DbConnectionStringBuilder builder, string key, out string value)
+    {
+        if (builder.TryGetValue(key, out var raw) && raw is not null)
+        {
+            value = raw.ToString() ?? string.Empty;
+            return true;
+        }
+
+        value = string.Empty;
+        return false;
     }
 }
