@@ -43,6 +43,12 @@ public partial class BackupViewModel : ObservableObject
     private bool isLoadingDatabases;
 
     [ObservableProperty]
+    private bool isBackupCompleted;
+
+    [ObservableProperty]
+    private string completionMessage = string.Empty;
+
+    [ObservableProperty]
     private string logOutput = string.Empty;
 
     [ObservableProperty]
@@ -164,6 +170,8 @@ public partial class BackupViewModel : ObservableObject
     private async Task StartBackupAsync()
     {
         ClearHighlights();
+        IsBackupCompleted = false;
+        CompletionMessage = string.Empty;
 
         if (string.IsNullOrWhiteSpace(Server))
         {
@@ -206,14 +214,18 @@ public partial class BackupViewModel : ObservableObject
             var progress = new Progress<string>(AppendHighlight);
             await _sqlPackageService.ExportAsync(connectionString, OutputPath, progress, _cancellationTokenSource.Token);
             AppendHighlight("Backup completed successfully.");
+            CompletionMessage = $"Backup created at: {OutputPath}";
+            IsBackupCompleted = true;
         }
         catch (OperationCanceledException)
         {
             AppendHighlight("Backup canceled.");
+            IsBackupCompleted = false;
         }
         catch (Exception ex)
         {
             AppendHighlight($"Backup failed: {ex.Message}");
+            IsBackupCompleted = false;
         }
         finally
         {

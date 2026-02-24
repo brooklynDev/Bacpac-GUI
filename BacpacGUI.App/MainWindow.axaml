@@ -23,6 +23,48 @@
             <GradientStop Color="#FFDDEAF7" Offset="1.0" />
         </LinearGradientBrush>
     </Window.Background>
+    <Window.Styles>
+        <Style Selector="Button">
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="14,8" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="Button.primary">
+            <Setter Property="Background" Value="#FF0F7A69" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderBrush" Value="#FF0C6659" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+        <Style Selector="Button.primary:pointerover">
+            <Setter Property="Background" Value="#FF0C6659" />
+        </Style>
+        <Style Selector="Button.secondary">
+            <Setter Property="Background" Value="#FFF2F8FF" />
+            <Setter Property="Foreground" Value="#FF20466F" />
+            <Setter Property="BorderBrush" Value="#FFC9DDF4" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+        <Style Selector="Button.secondary:pointerover">
+            <Setter Property="Background" Value="#FFE8F1FC" />
+        </Style>
+        <Style Selector="Button.neutral">
+            <Setter Property="Background" Value="#FFF7F8FA" />
+            <Setter Property="Foreground" Value="#FF445066" />
+            <Setter Property="BorderBrush" Value="#FFD5DCE7" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+        <Style Selector="Button.neutral:pointerover">
+            <Setter Property="Background" Value="#FFEEF2F7" />
+        </Style>
+        <Style Selector="Button.icon">
+            <Setter Property="Width" Value="42" />
+            <Setter Property="Height" Value="36" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Background" Value="#FFF2F8FF" />
+            <Setter Property="BorderBrush" Value="#FFC9DDF4" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+    </Window.Styles>
 
     <Grid RowDefinitions="Auto,*" Margin="24">
         <Border Grid.Row="0"
@@ -68,7 +110,7 @@
                 BoxShadow="0 18 48 0 #1F0F172A">
             <TabControl>
                 <TabItem Header="Backup">
-                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,*"
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,*"
                           ColumnDefinitions="Auto,*"
                           RowSpacing="14"
                           ColumnSpacing="14"
@@ -123,6 +165,7 @@
                                       PlaceholderText="Load databases first" />
                             <Button Grid.Column="1"
                                     MinWidth="140"
+                                    Classes="secondary"
                                     Content="Load Databases"
                                     Command="{Binding Backup.LoadDatabasesCommand}" />
                         </Grid>
@@ -141,9 +184,7 @@
                                      Text="{Binding Backup.OutputPath, Mode=TwoWay}"
                                      Watermark="/path/to/backup.bacpac" />
                             <Button Grid.Column="1"
-                                    Width="42"
-                                    Height="36"
-                                    Padding="0"
+                                    Classes="icon"
                                     Command="{Binding Backup.BrowseOutputPathCommand}"
                                     ToolTip.Tip="Choose folder and auto-generate output filename">
                                 <TextBlock Text="📁" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -156,9 +197,11 @@
                                     Spacing="10">
                             <Button Content="Start Backup"
                                     MinWidth="130"
+                                    Classes="primary"
                                     Command="{Binding Backup.StartBackupCommand}" />
                             <Button Content="Cancel"
                                     MinWidth="90"
+                                    Classes="neutral"
                                     Command="{Binding Backup.CancelBackupCommand}"
                                     IsVisible="{Binding Backup.IsRunning}" />
                         </StackPanel>
@@ -172,17 +215,40 @@
                         <Border Grid.Row="7"
                                 Grid.Column="0"
                                 Grid.ColumnSpan="2"
+                                IsVisible="{Binding Backup.IsBackupCompleted}"
+                                Background="#FFDCF7E8"
+                                BorderBrush="#FF9FDEBC"
+                                BorderThickness="1"
+                                CornerRadius="12"
+                                Padding="14,12">
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                <TextBlock Text="✓"
+                                           FontSize="26"
+                                           FontWeight="Bold"
+                                           Foreground="#FF157347"
+                                           VerticalAlignment="Center" />
+                                <StackPanel Grid.Column="1" Spacing="2">
+                                    <TextBlock Text="Backup Complete"
+                                               FontSize="17"
+                                               FontWeight="Bold"
+                                               Foreground="#FF0F5A37" />
+                                    <TextBlock Text="{Binding Backup.CompletionMessage}"
+                                               Foreground="#FF1E5E42"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Border Grid.Row="8"
+                                Grid.Column="0"
+                                Grid.ColumnSpan="2"
                                 BorderThickness="1"
                                 CornerRadius="12"
                                 Padding="12"
                                 BorderBrush="#FFDCE6F2"
                                 Background="#EAF8FAFF">
-                            <Grid RowDefinitions="Auto,*" RowSpacing="10">
-                                <TextBlock Grid.Row="0"
-                                           Text="Activity Highlights"
-                                           FontWeight="Bold"
-                                           Foreground="#FF1A3556" />
-                                <TextBox Grid.Row="1"
+                            <Grid RowDefinitions="*">
+                                <TextBox Grid.Row="0"
                                  Height="210"
                                  IsReadOnly="True"
                                  AcceptsReturn="True"
@@ -228,9 +294,11 @@
                                     Spacing="10">
                             <Button Content="Start Restore"
                                     MinWidth="130"
+                                    Classes="primary"
                                     Command="{Binding Restore.StartRestoreCommand}" />
                             <Button Content="Cancel"
                                     MinWidth="90"
+                                    Classes="neutral"
                                     Command="{Binding Restore.CancelRestoreCommand}"
                                     IsVisible="{Binding Restore.IsRunning}" />
                         </StackPanel>
@@ -249,12 +317,8 @@
                                 Padding="12"
                                 BorderBrush="#FFDCE6F2"
                                 Background="#EAF8FAFF">
-                            <Grid RowDefinitions="Auto,*" RowSpacing="10">
-                                <TextBlock Grid.Row="0"
-                                           Text="Activity Highlights"
-                                           FontWeight="Bold"
-                                           Foreground="#FF1A3556" />
-                                <TextBox Grid.Row="1"
+                            <Grid RowDefinitions="*">
+                                <TextBox Grid.Row="0"
                                  Height="280"
                                  IsReadOnly="True"
                                  AcceptsReturn="True"
