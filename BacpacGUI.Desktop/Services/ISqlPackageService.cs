@@ -12,4 +12,6 @@ public interface ISqlPackageService
     Task ImportAsync(string bacpacPath, string connectionString, IProgress<string> logProgress, CancellationToken token);
 
     Task<IReadOnlyList<string>> GetUserDatabasesAsync(string server, string username, string password, CancellationToken token);
+
+    Task<BacpacPreviewResult> PreviewAsync(string bacpacPath, CancellationToken token);
 }

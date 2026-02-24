@@ -67,11 +67,41 @@ public partial class RestoreViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<string> activityHighlights = new();
 
+    [ObservableProperty]
+    private bool isPreviewLoading;
+
+    [ObservableProperty]
+    private bool hasPreview;
+
+    [ObservableProperty]
+    private string previewFileName = string.Empty;
+
+    [ObservableProperty]
+    private string previewDatabaseName = string.Empty;
+
+    [ObservableProperty]
+    private string previewFileSize = string.Empty;
+
+    [ObservableProperty]
+    private int previewTableCount;
+
+    [ObservableProperty]
+    private int previewViewCount;
+
+    [ObservableProperty]
+    private int previewProcedureCount;
+
     public bool IsExistingDatabaseMode => !CreateNewDatabase;
 
     public bool ShowRestoreCompletedBanner => IsRestoreCompleted && !IsRunning;
 
+    public bool ShowPreviewPanel => IsPreviewLoading || HasPreview;
+
+    public int PreviewObjectCount => PreviewTableCount + PreviewViewCount + PreviewProcedureCount;
+
     public IAsyncRelayCommand BrowseBacpacPathCommand { get; }
+
+    public IAsyncRelayCommand PreviewBacpacCommand { get; }
 
     public IAsyncRelayCommand LoadDatabasesCommand { get; }
 
@@ -95,6 +125,7 @@ public partial class RestoreViewModel : ObservableObject
         _userInteractionService = userInteractionService;
 
         BrowseBacpacPathCommand = new AsyncRelayCommand(BrowseBacpacPathAsync, CanBrowseOrLoad);
+        PreviewBacpacCommand = new AsyncRelayCommand(PreviewBacpacAsync, CanPreviewBacpac);
         LoadDatabasesCommand = new AsyncRelayCommand(LoadDatabasesAsync, CanBrowseOrLoad);
         StartRestoreCommand = new AsyncRelayCommand(StartRestoreAsync, CanStartRestore);
         CancelRestoreCommand = new RelayCommand(CancelRestore, () => IsRunning);
@@ -109,7 +140,9 @@ public partial class RestoreViewModel : ObservableObject
 
         if (value && string.IsNullOrWhiteSpace(NewDatabaseName))
         {
-            var suggestedName = GetDatabaseNameFromBacpacPath(BacpacPath);
+            var suggestedName = string.IsNullOrWhiteSpace(PreviewDatabaseName)
+                ? GetDatabaseNameFromBacpacPath(BacpacPath)
+                : PreviewDatabaseName;
             if (!string.IsNullOrWhiteSpace(suggestedName))
             {
                 NewDatabaseName = suggestedName;
@@ -124,6 +157,7 @@ public partial class RestoreViewModel : ObservableObject
         StartRestoreCommand.NotifyCanExecuteChanged();
         CancelRestoreCommand.NotifyCanExecuteChanged();
         OpenBacpacFolderCommand.NotifyCanExecuteChanged();
+        PreviewBacpacCommand.NotifyCanExecuteChanged();
         OnPropertyChanged(nameof(ShowRestoreCompletedBanner));
     }
 
@@ -135,6 +169,7 @@ public partial class RestoreViewModel : ObservableObject
     partial void OnIsLoadingDatabasesChanged(bool value)
     {
         BrowseBacpacPathCommand.NotifyCanExecuteChanged();
+        PreviewBacpacCommand.NotifyCanExecuteChanged();
         LoadDatabasesCommand.NotifyCanExecuteChanged();
         StartRestoreCommand.NotifyCanExecuteChanged();
     }
@@ -148,9 +183,40 @@ public partial class RestoreViewModel : ObservableObject
     partial void OnBacpacPathChanged(string value)
     {
         OpenBacpacFolderCommand.NotifyCanExecuteChanged();
+        PreviewBacpacCommand.NotifyCanExecuteChanged();
+        ClearPreview();
+        OnPropertyChanged(nameof(ShowPreviewPanel));
+    }
+
+    partial void OnIsPreviewLoadingChanged(bool value)
+    {
+        PreviewBacpacCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(ShowPreviewPanel));
+    }
+
+    partial void OnHasPreviewChanged(bool value)
+    {
+        OnPropertyChanged(nameof(ShowPreviewPanel));
+    }
+
+    partial void OnPreviewTableCountChanged(int value)
+    {
+        OnPropertyChanged(nameof(PreviewObjectCount));
+    }
+
+    partial void OnPreviewViewCountChanged(int value)
+    {
+        OnPropertyChanged(nameof(PreviewObjectCount));
+    }
+
+    partial void OnPreviewProcedureCountChanged(int value)
+    {
+        OnPropertyChanged(nameof(PreviewObjectCount));
     }
 
     private bool CanBrowseOrLoad() => !IsRunning && !IsLoadingDatabases;
+
+    private bool CanPreviewBacpac() => !IsRunning && !IsLoadingDatabases && !IsPreviewLoading && !string.IsNullOrWhiteSpace(BacpacPath);
 
     private bool CanStartRestore() => !IsRunning && !IsLoadingDatabases;
 
@@ -410,6 +476,91 @@ public partial class RestoreViewModel : ObservableObject
         }
 
         return Path.GetFileNameWithoutExtension(bacpacPath);
+    }
+
+    private async Task PreviewBacpacAsync()
+    {
+        if (string.IsNullOrWhiteSpace(BacpacPath))
+        {
+            AppendHighlight("Select a bacpac file first.");
+            return;
+        }
+
+        IsPreviewLoading = true;
+        HasPreview = false;
+        ClearPreviewValues();
+
+        try
+        {
+            AppendHighlight("Reading bacpac preview...");
+            var preview = await _sqlPackageService.PreviewAsync(BacpacPath, CancellationToken.None);
+
+            PreviewFileName = preview.FileName;
+            PreviewDatabaseName = preview.SuggestedDatabaseName;
+            PreviewFileSize = FormatFileSize(preview.FileSizeBytes);
+            PreviewTableCount = preview.TableCount;
+            PreviewViewCount = preview.ViewCount;
+            PreviewProcedureCount = preview.ProcedureCount;
+            HasPreview = true;
+
+            if (CreateNewDatabase && string.IsNullOrWhiteSpace(NewDatabaseName) && !string.IsNullOrWhiteSpace(PreviewDatabaseName))
+            {
+                NewDatabaseName = PreviewDatabaseName;
+            }
+
+            AppendHighlight("Bacpac preview loaded.");
+            StatusMessage = "Preview ready";
+        }
+        catch (Exception ex)
+        {
+            AppendHighlight($"Bacpac preview failed: {ex.Message}");
+            StatusMessage = "Preview failed";
+        }
+        finally
+        {
+            IsPreviewLoading = false;
+        }
+    }
+
+    private static string FormatFileSize(long bytes)
+    {
+        const double kb = 1024;
+        const double mb = 1024 * 1024;
+        const double gb = 1024 * 1024 * 1024;
+
+        if (bytes >= gb)
+        {
+            return $"{bytes / gb:0.##} GB";
+        }
+
+        if (bytes >= mb)
+        {
+            return $"{bytes / mb:0.##} MB";
+        }
+
+        if (bytes >= kb)
+        {
+            return $"{bytes / kb:0.##} KB";
+        }
+
+        return $"{bytes} B";
+    }
+
+    private void ClearPreview()
+    {
+        IsPreviewLoading = false;
+        HasPreview = false;
+        ClearPreviewValues();
+    }
+
+    private void ClearPreviewValues()
+    {
+        PreviewFileName = string.Empty;
+        PreviewDatabaseName = string.Empty;
+        PreviewFileSize = string.Empty;
+        PreviewTableCount = 0;
+        PreviewViewCount = 0;
+        PreviewProcedureCount = 0;
     }
 
     private async Task WaitForLogQuiescenceAsync()
