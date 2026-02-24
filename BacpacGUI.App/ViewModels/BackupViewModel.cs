@@ -12,12 +12,11 @@ namespace BacpacGUI.App.ViewModels;
 
 public partial class BackupViewModel : ObservableObject
 {
-    private const int MaxHighlights = 10;
+    private const int MaxHighlights = 300;
 
     private readonly ISqlPackageService _sqlPackageService;
     private readonly IFolderPickerService _folderPickerService;
     private CancellationTokenSource? _cancellationTokenSource;
-    private string? _lastHighlight;
 
     [ObservableProperty]
     private string server = string.Empty;
@@ -233,7 +232,6 @@ public partial class BackupViewModel : ObservableObject
     {
         ActivityHighlights.Clear();
         LogOutput = string.Empty;
-        _lastHighlight = null;
     }
 
     private void AppendHighlight(string message)
@@ -244,12 +242,6 @@ public partial class BackupViewModel : ObservableObject
             return;
         }
 
-        if (string.Equals(normalized, _lastHighlight, StringComparison.OrdinalIgnoreCase))
-        {
-            return;
-        }
-
-        _lastHighlight = normalized;
         var entry = $"{DateTime.Now:HH:mm:ss}  {normalized}";
 
         ActivityHighlights.Add(entry);
@@ -265,13 +257,7 @@ public partial class BackupViewModel : ObservableObject
 
     private static string NormalizeMessage(string message)
     {
-        var trimmed = message.Trim();
-        if (trimmed.Length > 140)
-        {
-            trimmed = $"{trimmed[..140]}...";
-        }
-
-        return trimmed;
+        return message.Trim();
     }
 
     private static string SanitizeFileName(string value)

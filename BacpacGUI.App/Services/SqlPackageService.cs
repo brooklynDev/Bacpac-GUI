@@ -89,22 +89,24 @@ public sealed class SqlPackageService : ISqlPackageService
     private static DacServices CreateDacServices(string connectionString, IProgress<string> logProgress)
     {
         var services = new DacServices(connectionString);
-        string? lastStatus = null;
+
+        services.Message += (_, e) =>
+        {
+            var messageText = e.Message?.ToString()?.Trim();
+            if (!string.IsNullOrWhiteSpace(messageText))
+            {
+                logProgress.Report($"Message: {messageText}");
+            }
+        };
 
         services.ProgressChanged += (_, e) =>
         {
             var status = e.Status.ToString();
-            if (string.Equals(status, lastStatus, StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
-            lastStatus = status;
 
             var messageText = e.Message?.ToString()?.Trim();
             if (!string.IsNullOrWhiteSpace(messageText))
             {
-                logProgress.Report($"{status}: {Shorten(messageText)}");
+                logProgress.Report($"{status}: {messageText}");
                 return;
             }
 
@@ -112,11 +114,6 @@ public sealed class SqlPackageService : ISqlPackageService
         };
 
         return services;
-    }
-
-    private static string Shorten(string value)
-    {
-        return value.Length > 120 ? $"{value[..120]}..." : value;
     }
 
     private static string GetDatabaseName(string connectionString)
