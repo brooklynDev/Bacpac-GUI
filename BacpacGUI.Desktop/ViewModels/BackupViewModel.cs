@@ -323,7 +323,7 @@ public partial class BackupViewModel : ObservableObject
         {
             AppendHighlight($"Backup started for '{dbName}'.");
             AppendHighlight($"Resolved output path: {OutputPath}");
-            var progress = new Progress<string>(AppendHighlight);
+            await using var progress = new BufferedLogProgress(AppendHighlight, _cancellationTokenSource.Token);
             await _sqlPackageService.ExportAsync(connectionString, resolvedOutputPath, progress, _cancellationTokenSource.Token);
             AppendHighlight("Backup completed successfully.");
             CompletionMessage = $"Backup created at: {OutputPath}";
@@ -410,9 +410,7 @@ public partial class BackupViewModel : ObservableObject
             ActivityHighlights.RemoveAt(0);
         }
 
-        LogOutput = string.IsNullOrEmpty(LogOutput)
-            ? entry
-            : $"{LogOutput}{Environment.NewLine}{entry}";
+        LogOutput = string.Join(Environment.NewLine, ActivityHighlights);
     }
 
     private static string NormalizeMessage(string message)

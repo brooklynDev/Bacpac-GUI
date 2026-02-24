@@ -278,7 +278,7 @@ public partial class RestoreViewModel : ObservableObject
         try
         {
             AppendHighlight($"Restore started for '{targetDatabase}'.");
-            var progress = new Progress<string>(AppendHighlight);
+            await using var progress = new BufferedLogProgress(AppendHighlight, _cancellationTokenSource.Token);
             await _sqlPackageService.ImportAsync(BacpacPath, connectionString, progress, _cancellationTokenSource.Token);
             AppendHighlight("Restore completed successfully.");
             CompletionMessage = $"Database ready: {targetDatabase}";
@@ -364,9 +364,7 @@ public partial class RestoreViewModel : ObservableObject
             ActivityHighlights.RemoveAt(0);
         }
 
-        LogOutput = string.IsNullOrEmpty(LogOutput)
-            ? entry
-            : $"{LogOutput}{Environment.NewLine}{entry}";
+        LogOutput = string.Join(Environment.NewLine, ActivityHighlights);
     }
 
     private static string NormalizeMessage(string message)
