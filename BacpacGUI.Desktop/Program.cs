@@ -1,10 +1,10 @@
 using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using BacpacGUI.App.Services;
-using BacpacGUI.App.ViewModels;
+using BacpacGUI.Desktop.Services;
+using BacpacGUI.Desktop.ViewModels;
 
-namespace BacpacGUI.App;
+namespace BacpacGUI.Desktop;
 
 class Program
 {

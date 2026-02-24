@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 
-namespace BacpacGUI.App.Services;
+namespace BacpacGUI.Desktop.Services;
 
 public sealed class AvaloniaUserInteractionService : IUserInteractionService
 {

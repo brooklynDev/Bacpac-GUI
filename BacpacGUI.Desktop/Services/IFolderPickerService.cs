@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace BacpacGUI.App.Services;
+namespace BacpacGUI.Desktop.Services;
 
 public interface IFolderPickerService
 {

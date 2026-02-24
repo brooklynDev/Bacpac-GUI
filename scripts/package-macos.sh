@@ -2,10 +2,10 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-APP_PROJECT="$ROOT_DIR/BacpacGUI.App/BacpacGUI.App.csproj"
-ICON_SRC="$ROOT_DIR/BacpacGUI.App/Assets/app-icon-512.png"
+APP_PROJECT="$ROOT_DIR/BacpacGUI.Desktop/BacpacGUI.Desktop.csproj"
+ICON_SRC="$ROOT_DIR/BacpacGUI.Desktop/Assets/app-icon-512.png"
 ARTIFACTS_DIR="$ROOT_DIR/artifacts/macos"
-APP_EXECUTABLE_NAME="BacpacGUI.App"
+APP_EXECUTABLE_NAME="BacpacGUI.Desktop"
 APP_DISPLAY_NAME="Bacpac GUI"
 BUNDLE_ID="com.internal.bacpacgui"
 VERSION="1.0.0"
@@ -50,7 +50,7 @@ package_rid() {
     zip_name="BacpacGUI-macOS-Intel.zip"
   fi
 
-  local publish_dir="$ROOT_DIR/BacpacGUI.App/bin/Release/net10.0/$rid/publish"
+  local publish_dir="$ROOT_DIR/BacpacGUI.Desktop/bin/Release/net10.0/$rid/publish"
   local rid_out_dir="$ARTIFACTS_DIR/$rid"
   local app_bundle_path="$rid_out_dir/$app_bundle_name"
   local macos_dir="$app_bundle_path/Contents/MacOS"

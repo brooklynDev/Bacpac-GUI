@@ -4,7 +4,7 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using System.Linq;
 
-namespace BacpacGUI.App.Behaviors;
+namespace BacpacGUI.Desktop.Behaviors;
 
 public sealed class TextBoxAutoScrollBehavior
 {

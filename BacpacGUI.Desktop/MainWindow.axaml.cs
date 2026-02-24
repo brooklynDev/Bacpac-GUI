@@ -1,9 +1,9 @@
 using Avalonia;
 using Avalonia.Controls;
-using BacpacGUI.App.ViewModels;
+using BacpacGUI.Desktop.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace BacpacGUI.App;
+namespace BacpacGUI.Desktop;
 
 public partial class MainWindow : Window
 {

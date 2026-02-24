@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace BacpacGUI.App.ViewModels;
+namespace BacpacGUI.Desktop.ViewModels;
 
 public partial class MainWindowViewModel : ObservableObject
 {

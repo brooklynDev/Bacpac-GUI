@@ -5,11 +5,11 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using BacpacGUI.App.Services;
+using BacpacGUI.Desktop.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-namespace BacpacGUI.App.ViewModels;
+namespace BacpacGUI.Desktop.ViewModels;
 
 public partial class BackupViewModel : ObservableObject
 {

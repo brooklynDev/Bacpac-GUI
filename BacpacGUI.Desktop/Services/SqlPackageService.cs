@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Dac;
 
-namespace BacpacGUI.App.Services;
+namespace BacpacGUI.Desktop.Services;
 
 public sealed class SqlPackageService : ISqlPackageService
 {

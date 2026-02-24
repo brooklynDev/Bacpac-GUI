@@ -4,7 +4,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 
-namespace BacpacGUI.App.Services;
+namespace BacpacGUI.Desktop.Services;
 
 #pragma warning disable CS0618
 public sealed class AvaloniaFolderPickerService : IFolderPickerService

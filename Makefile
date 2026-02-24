@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-APP_PROJECT := BacpacGUI.App/BacpacGUI.App.csproj
+APP_PROJECT := BacpacGUI.Desktop/BacpacGUI.Desktop.csproj
 SOLUTION := BacpacGUI.sln
 PACKAGE_SCRIPT := scripts/package-macos.sh
 WINDOWS_PACKAGE_SCRIPT := scripts/package-windows.sh

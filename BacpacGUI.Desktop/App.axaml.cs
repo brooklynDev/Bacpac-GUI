@@ -4,7 +4,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace BacpacGUI.App;
+namespace BacpacGUI.Desktop;
 
 public partial class App : Application
 {
