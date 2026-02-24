@@ -102,9 +102,15 @@
             <Setter Property="Padding" Value="14,8" />
             <Setter Property="CornerRadius" Value="10" />
         </Style>
+        <Style Selector="TabItem AccessText">
+            <Setter Property="Foreground" Value="#FFB8C5E8" />
+        </Style>
         <Style Selector="TabItem:pointerover">
             <Setter Property="Background" Value="#5A192A45" />
             <Setter Property="BorderBrush" Value="#7B5074A8" />
+            <Setter Property="Foreground" Value="#FFD7E3FF" />
+        </Style>
+        <Style Selector="TabItem:pointerover AccessText">
             <Setter Property="Foreground" Value="#FFD7E3FF" />
         </Style>
         <Style Selector="TabItem:selected">
@@ -112,6 +118,9 @@
             <Setter Property="BorderBrush" Value="#FF78AEDD" />
             <Setter Property="Foreground" Value="#FFFFFFFF" />
             <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+        <Style Selector="TabItem:selected AccessText">
+            <Setter Property="Foreground" Value="#FFFFFFFF" />
         </Style>
         <Style Selector="Button">
             <Setter Property="CornerRadius" Value="10" />
@@ -132,14 +141,14 @@
         </Style>
         <Style Selector="Button:disabled">
             <Setter Property="Foreground" Value="#99D7E4FF" />
-            <Setter Property="Background" Value="#8F3B5684" />
-            <Setter Property="BorderBrush" Value="#A67293C8" />
+            <Setter Property="Background" Value="#FF4A618B" />
+            <Setter Property="BorderBrush" Value="#FF86A8DD" />
             <Setter Property="Opacity" Value="1" />
         </Style>
         <Style Selector="Button:disabled:pointerover">
             <Setter Property="Foreground" Value="#99D7E4FF" />
-            <Setter Property="Background" Value="#8F3B5684" />
-            <Setter Property="BorderBrush" Value="#A67293C8" />
+            <Setter Property="Background" Value="#FF4A618B" />
+            <Setter Property="BorderBrush" Value="#FF86A8DD" />
             <Setter Property="Opacity" Value="1" />
         </Style>
         <Style Selector="Button:disabled AccessText">
@@ -168,15 +177,37 @@
             <Setter Property="BorderBrush" Value="#FF58E2C0" />
         </Style>
         <Style Selector="Button.primary:disabled">
-            <Setter Property="Foreground" Value="#FFF0FFFB" />
-            <Setter Property="Background" Value="#8D4C8C81" />
-            <Setter Property="BorderBrush" Value="#B175C7BA" />
+            <Setter Property="Foreground" Value="#FFEFFFFA" />
+            <Setter Property="Background" Value="#FF4D8A7D" />
+            <Setter Property="BorderBrush" Value="#FF91D1C3" />
             <Setter Property="Opacity" Value="1" />
         </Style>
         <Style Selector="Button.primary:disabled:pointerover">
-            <Setter Property="Foreground" Value="#FFF0FFFB" />
-            <Setter Property="Background" Value="#8D4C8C81" />
-            <Setter Property="BorderBrush" Value="#B175C7BA" />
+            <Setter Property="Foreground" Value="#FFEFFFFA" />
+            <Setter Property="Background" Value="#FF4D8A7D" />
+            <Setter Property="BorderBrush" Value="#FF91D1C3" />
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="Button.startAction">
+            <Setter Property="Background" Value="#FF12B89B" />
+            <Setter Property="BorderBrush" Value="#FF5BE3CC" />
+            <Setter Property="Foreground" Value="#FFF8FFFD" />
+        </Style>
+        <Style Selector="Button.startAction:pointerover">
+            <Setter Property="Background" Value="#FF30E2C1" />
+            <Setter Property="BorderBrush" Value="#FFACFFEF" />
+            <Setter Property="Foreground" Value="#FFFFFFFF" />
+        </Style>
+        <Style Selector="Button.startAction:disabled">
+            <Setter Property="Background" Value="#FF4D8A7D" />
+            <Setter Property="BorderBrush" Value="#FF91D1C3" />
+            <Setter Property="Foreground" Value="#FFEFFFFA" />
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="Button.startAction:disabled:pointerover">
+            <Setter Property="Background" Value="#FF61A798" />
+            <Setter Property="BorderBrush" Value="#FFB3E7DC" />
+            <Setter Property="Foreground" Value="#FFEFFFFA" />
             <Setter Property="Opacity" Value="1" />
         </Style>
         <Style Selector="Button.secondary">
@@ -238,21 +269,50 @@
             <Setter Property="Foreground" Value="#FFEAF1FF" />
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
+        <Style Selector="CheckBox AccessText">
+            <Setter Property="Foreground" Value="#FFEAF1FF" />
+        </Style>
         <Style Selector="CheckBox:pointerover">
-            <Setter Property="Foreground" Value="#FFFFFFFF" />
+            <Setter Property="Foreground" Value="#FFEAF1FF" />
+        </Style>
+        <Style Selector="CheckBox:pointerover AccessText">
+            <Setter Property="Foreground" Value="#FFEAF1FF" />
         </Style>
         <Style Selector="CheckBox:disabled">
             <Setter Property="Foreground" Value="#99C8D5F2" />
         </Style>
+        <Style Selector="CheckBox:disabled AccessText">
+            <Setter Property="Foreground" Value="#99C8D5F2" />
+        </Style>
+        <Style Selector="CheckBox.modeToggle">
+            <Setter Property="Foreground" Value="#FFEAF1FF" />
+        </Style>
+        <Style Selector="CheckBox.modeToggle:pointerover">
+            <Setter Property="Foreground" Value="#FFEAF1FF" />
+        </Style>
+        <Style Selector="CheckBox.modeToggle /template/ Border#checkBoxBorder">
+            <Setter Property="Background" Value="#FF35517F" />
+            <Setter Property="BorderBrush" Value="#FFC6DEFF" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="CornerRadius" Value="4" />
+        </Style>
+        <Style Selector="CheckBox.modeToggle:pointerover /template/ Border#checkBoxBorder">
+            <Setter Property="Background" Value="#FF3E6196" />
+            <Setter Property="BorderBrush" Value="#FFE2F0FF" />
+        </Style>
+        <Style Selector="CheckBox.modeToggle:checked /template/ Border#checkBoxBorder">
+            <Setter Property="Background" Value="#FF3A8FD9" />
+            <Setter Property="BorderBrush" Value="#FFCCECFF" />
+        </Style>
         <Style Selector="CheckBox /template/ Border#checkBoxBorder">
-            <Setter Property="Background" Value="#9A14203A" />
-            <Setter Property="BorderBrush" Value="#FF5B79A7" />
-            <Setter Property="BorderThickness" Value="1.5" />
+            <Setter Property="Background" Value="#FF27406A" />
+            <Setter Property="BorderBrush" Value="#FFA2C5F5" />
+            <Setter Property="BorderThickness" Value="2" />
             <Setter Property="CornerRadius" Value="4" />
         </Style>
         <Style Selector="CheckBox:pointerover /template/ Border#checkBoxBorder">
-            <Setter Property="Background" Value="#A2203051" />
-            <Setter Property="BorderBrush" Value="#FF80AEE3" />
+            <Setter Property="Background" Value="#FF35517F" />
+            <Setter Property="BorderBrush" Value="#FFC6DEFF" />
         </Style>
         <Style Selector="CheckBox:checked /template/ Border#checkBoxBorder">
             <Setter Property="Background" Value="#FF2E7BC4" />
@@ -375,6 +435,7 @@
                             <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Input Mode" FontWeight="SemiBold" />
                             <CheckBox Grid.Row="0"
                                       Grid.Column="1"
+                                      Classes="modeToggle"
                                       Content="Use full connection string"
                                       IsChecked="{Binding Backup.UseConnectionStringMode, Mode=TwoWay}"
                                       Foreground="#FFE3EBFF" />
@@ -416,7 +477,7 @@
                             </Grid>
 
                             <StackPanel Grid.Row="7" Grid.Column="1" Orientation="Horizontal" Spacing="10">
-                                <Button Content="Start Backup" MinWidth="130" Classes="primary" Command="{Binding Backup.StartBackupCommand}" />
+                                <Button Content="Start Backup" MinWidth="130" Classes="primary startAction" Command="{Binding Backup.StartBackupCommand}" />
                                 <Button Content="Cancel" MinWidth="90" Classes="neutral" Command="{Binding Backup.CancelBackupCommand}" IsVisible="{Binding Backup.IsRunning}" />
                                 <Border Classes="statusChip" VerticalAlignment="Center">
                                     <TextBlock Text="{Binding Backup.StatusMessage}" FontWeight="SemiBold" Foreground="#FFCBE0FF" />
@@ -523,7 +584,7 @@
                             <TextBox Grid.Row="4" Grid.Column="1" MinHeight="36" PasswordChar="*" Text="{Binding Restore.Password, Mode=TwoWay}" Watermark="password" />
 
                             <TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Text="Target Mode" FontWeight="SemiBold" />
-                            <CheckBox Grid.Row="5" Grid.Column="1" Content="Create a new database" IsChecked="{Binding Restore.CreateNewDatabase, Mode=TwoWay}" Foreground="#FFE3EBFF" />
+                            <CheckBox Grid.Row="5" Grid.Column="1" Classes="modeToggle" Content="Create a new database" IsChecked="{Binding Restore.CreateNewDatabase, Mode=TwoWay}" Foreground="#FFE3EBFF" />
 
                             <TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" IsVisible="{Binding Restore.IsExistingDatabaseMode}" Text="Existing DB" FontWeight="SemiBold" />
                             <Grid Grid.Row="6" Grid.Column="1" IsVisible="{Binding Restore.IsExistingDatabaseMode}" ColumnDefinitions="*,Auto" ColumnSpacing="10">
@@ -535,7 +596,7 @@
                             <TextBox Grid.Row="7" Grid.Column="1" IsVisible="{Binding Restore.CreateNewDatabase}" MinHeight="36" Text="{Binding Restore.NewDatabaseName, Mode=TwoWay}" Watermark="my_restored_database" />
 
                             <StackPanel Grid.Row="8" Grid.Column="1" Orientation="Horizontal" Spacing="10">
-                                <Button Content="Start Restore" MinWidth="130" Classes="primary" Command="{Binding Restore.StartRestoreCommand}" />
+                                <Button Content="Start Restore" MinWidth="130" Classes="primary startAction" Command="{Binding Restore.StartRestoreCommand}" />
                                 <Button Content="Cancel" MinWidth="90" Classes="neutral" Command="{Binding Restore.CancelRestoreCommand}" IsVisible="{Binding Restore.IsRunning}" />
                                 <Border Classes="statusChip" VerticalAlignment="Center">
                                     <TextBlock Text="{Binding Restore.StatusMessage}" FontWeight="SemiBold" Foreground="#FFCBE0FF" />
