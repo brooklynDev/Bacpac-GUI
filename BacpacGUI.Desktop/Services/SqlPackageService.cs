@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.IO.Compression;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Dac;
 
@@ -68,6 +71,63 @@ public sealed class SqlPackageService : ISqlPackageService
         }
 
         return databases;
+    }
+
+    public async Task<BacpacPreviewResult> PreviewAsync(string bacpacPath, CancellationToken token)
+    {
+        var normalizedBacpacPath = NormalizeImportPath(bacpacPath);
+
+        return await Task.Run(() =>
+        {
+            token.ThrowIfCancellationRequested();
+            using var archive = ZipFile.OpenRead(normalizedBacpacPath);
+
+            var modelEntry = archive.Entries.FirstOrDefault(entry =>
+                entry.FullName.EndsWith("model.xml", StringComparison.OrdinalIgnoreCase));
+            if (modelEntry is null)
+            {
+                throw new InvalidOperationException("The bacpac does not contain a model.xml file.");
+            }
+
+            XDocument modelDocument;
+            using (var modelStream = modelEntry.Open())
+            {
+                modelDocument = XDocument.Load(modelStream, LoadOptions.None);
+            }
+
+            var tableCount = CountModelObjects(modelDocument, "SqlTable");
+            var viewCount = CountModelObjects(modelDocument, "SqlView");
+            var procedureCount = CountModelObjects(modelDocument, "SqlProcedure");
+            var databaseName = GetDatabaseNameFromModel(modelDocument);
+
+            if (string.IsNullOrWhiteSpace(databaseName))
+            {
+                var originEntry = archive.Entries.FirstOrDefault(entry =>
+                    entry.FullName.EndsWith("origin.xml", StringComparison.OrdinalIgnoreCase));
+
+                if (originEntry is not null)
+                {
+                    using var originStream = originEntry.Open();
+                    var originDocument = XDocument.Load(originStream, LoadOptions.None);
+                    databaseName = GetDatabaseNameFromOrigin(originDocument);
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(databaseName))
+            {
+                databaseName = Path.GetFileNameWithoutExtension(normalizedBacpacPath);
+            }
+
+            var fileInfo = new FileInfo(normalizedBacpacPath);
+            return new BacpacPreviewResult(
+                normalizedBacpacPath,
+                fileInfo.Name,
+                databaseName,
+                fileInfo.Length,
+                tableCount,
+                viewCount,
+                procedureCount);
+        }, token).ConfigureAwait(false);
     }
 
     public static string BuildSqlAuthConnectionString(string server, string username, string password, string database)
@@ -217,5 +277,68 @@ public sealed class SqlPackageService : ISqlPackageService
                 buffer[i] = Array.IndexOf(state.invalidChars, ch) >= 0 ? '_' : ch;
             }
         });
+    }
+
+    private static int CountModelObjects(XDocument modelDocument, string objectType)
+    {
+        return modelDocument.Descendants()
+            .Where(element => element.Name.LocalName.Equals("Element", StringComparison.OrdinalIgnoreCase))
+            .Count(element =>
+            {
+                var typeAttribute = element.Attributes()
+                    .FirstOrDefault(attribute => attribute.Name.LocalName.Equals("Type", StringComparison.OrdinalIgnoreCase));
+
+                return typeAttribute is not null &&
+                       typeAttribute.Value.Contains(objectType, StringComparison.OrdinalIgnoreCase);
+            });
+    }
+
+    private static string GetDatabaseNameFromModel(XDocument modelDocument)
+    {
+        var databaseElement = modelDocument.Descendants()
+            .Where(element => element.Name.LocalName.Equals("Element", StringComparison.OrdinalIgnoreCase))
+            .FirstOrDefault(element =>
+            {
+                var typeAttribute = element.Attributes()
+                    .FirstOrDefault(attribute => attribute.Name.LocalName.Equals("Type", StringComparison.OrdinalIgnoreCase));
+
+                return typeAttribute is not null &&
+                       typeAttribute.Value.Contains("SqlDatabase", StringComparison.OrdinalIgnoreCase);
+            });
+
+        if (databaseElement is null)
+        {
+            return string.Empty;
+        }
+
+        var nameAttribute = databaseElement.Attributes()
+            .FirstOrDefault(attribute => attribute.Name.LocalName.Equals("Name", StringComparison.OrdinalIgnoreCase));
+        if (nameAttribute is null)
+        {
+            return string.Empty;
+        }
+
+        return NormalizeBracketedSqlName(nameAttribute.Value);
+    }
+
+    private static string GetDatabaseNameFromOrigin(XDocument originDocument)
+    {
+        var nameElement = originDocument.Descendants()
+            .FirstOrDefault(element =>
+                element.Name.LocalName.Equals("Name", StringComparison.OrdinalIgnoreCase) &&
+                !string.IsNullOrWhiteSpace(element.Value));
+
+        return nameElement?.Value.Trim() ?? string.Empty;
+    }
+
+    private static string NormalizeBracketedSqlName(string rawName)
+    {
+        var trimmed = rawName.Trim();
+        if (trimmed.StartsWith('[') && trimmed.EndsWith(']') && trimmed.Length >= 2)
+        {
+            return trimmed[1..^1];
+        }
+
+        return trimmed;
     }
 }
