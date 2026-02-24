@@ -1,0 +1,45 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Install ImageMagick
+        run: brew install imagemagick
+
+      - name: Build packages
+        run: make publish
+
+      - name: Publish release assets
+        uses: ncipollo/release-action@v1
+        with:
+          tag: latest
+          name: Latest Build
+          body: |
+            Automated latest build artifacts for Bacpac GUI.
+            Commit: ${{ github.sha }}
+          allowUpdates: true
+          replacesArtifacts: true
+          prerelease: true
+          artifacts: |
+            artifacts/macos/BacpacGUI-macOS-AppleSilicon.zip
+            artifacts/macos/BacpacGUI-macOS-Intel.zip
+            artifacts/windows/BacpacGUI-Windows-x64.zip
