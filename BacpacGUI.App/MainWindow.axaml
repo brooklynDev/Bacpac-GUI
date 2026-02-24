@@ -6,12 +6,12 @@
         xmlns:vm="using:BacpacGUI.App.ViewModels"
         x:DataType="vm:MainWindowViewModel"
         mc:Ignorable="d"
-        d:DesignWidth="1160"
-        d:DesignHeight="860"
-        MinWidth="1020"
-        MinHeight="760"
-        Width="1160"
-        Height="860"
+        d:DesignWidth="1240"
+        d:DesignHeight="900"
+        MinWidth="1080"
+        MinHeight="780"
+        Width="1240"
+        Height="900"
         x:Class="BacpacGUI.App.MainWindow"
         Icon="/Assets/app-icon-512.png"
         Title="Bacpac GUI"
@@ -19,107 +19,229 @@
         ExtendClientAreaChromeHints="PreferSystemChrome">
     <Window.Background>
         <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-            <GradientStop Color="#FFF5EBDD" Offset="0.0" />
-            <GradientStop Color="#FFE6F3F1" Offset="0.52" />
-            <GradientStop Color="#FFDDEAF7" Offset="1.0" />
+            <GradientStop Color="#FF06080F" Offset="0" />
+            <GradientStop Color="#FF0C1526" Offset="0.42" />
+            <GradientStop Color="#FF111A32" Offset="1" />
         </LinearGradientBrush>
     </Window.Background>
+    <Window.Resources>
+        <SolidColorBrush x:Key="TextControlBackground" Color="#8810182A" />
+        <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#8C13203A" />
+        <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#9320324E" />
+        <SolidColorBrush x:Key="TextControlForeground" Color="#FFF4F7FF" />
+        <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="#FFF6FAFF" />
+        <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#FFF7FBFF" />
+        <SolidColorBrush x:Key="TextControlForegroundDisabled" Color="#99C8D5F2" />
+        <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#FF9AB0D7" />
+        <SolidColorBrush x:Key="TextControlBorderBrush" Color="#FF334466" />
+        <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#FF486289" />
+        <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="#FF5E8FB0" />
+        <SolidColorBrush x:Key="TextControlSelectionHighlightColor" Color="#AA2F5D9B" />
+    </Window.Resources>
+
     <Window.Styles>
+        <Style Selector="TextBlock">
+            <Setter Property="Foreground" Value="#FFE7ECFF" />
+        </Style>
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="#8810182A" />
+            <Setter Property="BorderBrush" Value="#FF334466" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#FFF4F7FF" />
+            <Setter Property="CornerRadius" Value="10" />
+        </Style>
+        <Style Selector="TextBox:pointerover">
+            <Setter Property="Background" Value="#8E14203A" />
+            <Setter Property="BorderBrush" Value="#FF486289" />
+        </Style>
+        <Style Selector="TextBox:focus">
+            <Setter Property="Background" Value="#92213352" />
+            <Setter Property="BorderBrush" Value="#FF67A6C7" />
+            <Setter Property="Foreground" Value="#FFF7FBFF" />
+            <Setter Property="CaretBrush" Value="#FFF7FBFF" />
+            <Setter Property="SelectionBrush" Value="#AA2F5D9B" />
+        </Style>
+        <Style Selector="ComboBox">
+            <Setter Property="Background" Value="#8810182A" />
+            <Setter Property="BorderBrush" Value="#FF334466" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#FFF4F7FF" />
+            <Setter Property="PlaceholderForeground" Value="#FF9AB0D7" />
+            <Setter Property="CornerRadius" Value="10" />
+        </Style>
+        <Style Selector="ComboBox:pointerover">
+            <Setter Property="Background" Value="#8E14203A" />
+            <Setter Property="BorderBrush" Value="#FF486289" />
+        </Style>
+        <Style Selector="ComboBox:focus">
+            <Setter Property="Background" Value="#92213352" />
+            <Setter Property="BorderBrush" Value="#FF67A6C7" />
+            <Setter Property="Foreground" Value="#FFF7FBFF" />
+        </Style>
+        <Style Selector="TabControl">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="TabItem">
+            <Setter Property="Foreground" Value="#FFB8C5E8" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Background" Value="#4410182A" />
+            <Setter Property="BorderBrush" Value="#55314B76" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="14,8" />
+            <Setter Property="CornerRadius" Value="10" />
+        </Style>
+        <Style Selector="TabItem:pointerover">
+            <Setter Property="Background" Value="#5A192A45" />
+            <Setter Property="BorderBrush" Value="#7B5074A8" />
+            <Setter Property="Foreground" Value="#FFD7E3FF" />
+        </Style>
+        <Style Selector="TabItem:selected">
+            <Setter Property="Background" Value="#CC2A3D63" />
+            <Setter Property="BorderBrush" Value="#FF78AEDD" />
+            <Setter Property="Foreground" Value="#FFFFFFFF" />
+            <Setter Property="FontWeight" Value="Bold" />
+        </Style>
         <Style Selector="Button">
             <Setter Property="CornerRadius" Value="10" />
             <Setter Property="Padding" Value="14,8" />
             <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="#FFF5F8FF" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+        <Style Selector="Button:disabled">
+            <Setter Property="Foreground" Value="#99D7E4FF" />
+            <Setter Property="Background" Value="#55223654" />
+            <Setter Property="BorderBrush" Value="#66445E8B" />
         </Style>
         <Style Selector="Button.primary">
-            <Setter Property="Background" Value="#FF0F7A69" />
-            <Setter Property="Foreground" Value="White" />
-            <Setter Property="BorderBrush" Value="#FF0C6659" />
-            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Background" Value="#FF2FA68C" />
+            <Setter Property="BorderBrush" Value="#FF39CBAA" />
         </Style>
         <Style Selector="Button.primary:pointerover">
-            <Setter Property="Background" Value="#FF0C6659" />
+            <Setter Property="Background" Value="#FF3AB89B" />
         </Style>
         <Style Selector="Button.secondary">
-            <Setter Property="Background" Value="#FFF2F8FF" />
-            <Setter Property="Foreground" Value="#FF20466F" />
-            <Setter Property="BorderBrush" Value="#FFC9DDF4" />
-            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Background" Value="#FF223459" />
+            <Setter Property="BorderBrush" Value="#FF3A5788" />
         </Style>
         <Style Selector="Button.secondary:pointerover">
-            <Setter Property="Background" Value="#FFE8F1FC" />
+            <Setter Property="Background" Value="#FF29446F" />
         </Style>
         <Style Selector="Button.neutral">
-            <Setter Property="Background" Value="#FFF7F8FA" />
-            <Setter Property="Foreground" Value="#FF445066" />
-            <Setter Property="BorderBrush" Value="#FFD5DCE7" />
-            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Background" Value="#FF2B213B" />
+            <Setter Property="BorderBrush" Value="#FF5F4A7D" />
         </Style>
         <Style Selector="Button.neutral:pointerover">
-            <Setter Property="Background" Value="#FFEEF2F7" />
+            <Setter Property="Background" Value="#FF3A2951" />
         </Style>
         <Style Selector="Button.icon">
             <Setter Property="Width" Value="42" />
             <Setter Property="Height" Value="36" />
             <Setter Property="Padding" Value="0" />
-            <Setter Property="Background" Value="#FFF2F8FF" />
-            <Setter Property="BorderBrush" Value="#FFC9DDF4" />
-            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Background" Value="#FF223459" />
+            <Setter Property="BorderBrush" Value="#FF3A5788" />
         </Style>
         <Style Selector="Button.compact">
             <Setter Property="Padding" Value="10,6" />
             <Setter Property="FontSize" Value="12" />
         </Style>
         <Style Selector="Border.statusChip">
-            <Setter Property="Background" Value="#FFF2F8FF" />
-            <Setter Property="BorderBrush" Value="#FFC9DDF4" />
+            <Setter Property="Background" Value="#66233A62" />
+            <Setter Property="BorderBrush" Value="#FF3D5A8E" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="999" />
             <Setter Property="Padding" Value="10,4" />
         </Style>
+        <Style Selector="ComboBoxItem">
+            <Setter Property="Foreground" Value="#FFF0F5FF" />
+            <Setter Property="Background" Value="#FF121D34" />
+        </Style>
+        <Style Selector="ComboBoxItem:pointerover">
+            <Setter Property="Background" Value="#FF203155" />
+            <Setter Property="Foreground" Value="#FFFFFFFF" />
+        </Style>
+        <Style Selector="ComboBoxItem:selected">
+            <Setter Property="Background" Value="#FF2D4B7A" />
+            <Setter Property="Foreground" Value="#FFFFFFFF" />
+        </Style>
+        <Style Selector="PopupRoot">
+            <Setter Property="Background" Value="#FF0F182E" />
+        </Style>
     </Window.Styles>
 
-    <Grid RowDefinitions="Auto,*" Margin="24">
+    <Grid Margin="22" RowDefinitions="Auto,*">
+        <Border HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Width="560"
+                Height="340"
+                Margin="-120,-160,0,0"
+                IsHitTestVisible="False"
+                CornerRadius="300"
+                Opacity="0.55">
+            <Border.Background>
+                <RadialGradientBrush Center="0.5,0.5" RadiusX="75%" RadiusY="75%">
+                    <GradientStop Color="#FF2A67B8" Offset="0" />
+                    <GradientStop Color="#00307AD8" Offset="1" />
+                </RadialGradientBrush>
+            </Border.Background>
+        </Border>
+        <Border HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Width="620"
+                Height="360"
+                Margin="0,0,-130,-180"
+                IsHitTestVisible="False"
+                CornerRadius="320"
+                Opacity="0.45">
+            <Border.Background>
+                <RadialGradientBrush Center="0.5,0.5" RadiusX="80%" RadiusY="80%">
+                    <GradientStop Color="#FF1FA88F" Offset="0" />
+                    <GradientStop Color="#0025CFAE" Offset="1" />
+                </RadialGradientBrush>
+            </Border.Background>
+        </Border>
+
         <Border Grid.Row="0"
-                Background="#CFFFFFFF"
-                BorderBrush="#40FFFFFF"
+                Background="#8810182A"
+                BorderBrush="#AA3A5788"
                 BorderThickness="1"
-                CornerRadius="18"
-                Padding="20"
-                BoxShadow="0 14 36 0 #220F172A"
-                Margin="0,0,0,18">
+                CornerRadius="20"
+                Padding="22"
+                Margin="0,0,0,16"
+                BoxShadow="0 20 60 0 #66000000">
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
                 <StackPanel Spacing="6">
                     <TextBlock Text="Bacpac GUI"
-                               FontSize="30"
+                               FontSize="34"
                                FontWeight="Bold"
-                               Foreground="#FF12233A" />
-                    <TextBlock Text="Backup and restore SQL Server databases with a cleaner, guided workflow."
+                               Foreground="#FFF8FAFF" />
+                    <TextBlock Text="Fast SQL bacpac backup and restore with guided workflows"
                                FontSize="14"
-                               Foreground="#CC1F2A44" />
+                               Foreground="#FFB7C6EA" />
                 </StackPanel>
 
                 <Border Grid.Column="1"
                         VerticalAlignment="Center"
-                        Background="#FFF0F7F4"
-                        BorderBrush="#FFE1EEE8"
-                        BorderThickness="1"
                         CornerRadius="999"
-                        Padding="12,6">
+                        Padding="12,6"
+                        BorderThickness="1"
+                        BorderBrush="#FF55D8BB"
+                        Background="#3324B495">
                     <TextBlock Text="In-Process DacFx"
                                FontSize="12"
-                               FontWeight="SemiBold"
-                               Foreground="#FF1D6B57" />
+                               FontWeight="Bold"
+                               Foreground="#FF93FFE7" />
                 </Border>
             </Grid>
         </Border>
 
         <Border Grid.Row="1"
-                Background="#D9FFFFFF"
-                BorderBrush="#54FFFFFF"
+                Background="#7A111A2F"
+                BorderBrush="#AA38598E"
                 BorderThickness="1"
-                CornerRadius="20"
+                CornerRadius="22"
                 Padding="18"
-                BoxShadow="0 18 48 0 #1F0F172A">
+                BoxShadow="0 24 70 0 #66000000">
             <TabControl>
                 <TabItem Header="Backup">
                     <ScrollViewer VerticalScrollBarVisibility="Auto"
@@ -129,383 +251,131 @@
                               RowSpacing="14"
                               ColumnSpacing="14"
                               Margin="8">
-                        <TextBlock Grid.Row="0"
-                                   Grid.Column="0"
-                                   VerticalAlignment="Center"
-                                   Text="SQL Server"
-                                   FontWeight="SemiBold" />
-                        <TextBox Grid.Row="0"
-                                 Grid.Column="1"
-                                 MinHeight="36"
-                                 Text="{Binding Backup.Server, Mode=TwoWay}"
-                                 Watermark="localhost,1433 or myserver.database.windows.net" />
+                            <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="SQL Server" FontWeight="SemiBold" />
+                            <TextBox Grid.Row="0" Grid.Column="1" MinHeight="36" Text="{Binding Backup.Server, Mode=TwoWay}" Watermark="localhost,1433 or myserver.database.windows.net" />
 
-                        <TextBlock Grid.Row="1"
-                                   Grid.Column="0"
-                                   VerticalAlignment="Center"
-                                   Text="Username"
-                                   FontWeight="SemiBold" />
-                        <TextBox Grid.Row="1"
-                                 Grid.Column="1"
-                                 MinHeight="36"
-                                 Text="{Binding Backup.Username, Mode=TwoWay}"
-                                 Watermark="sql_login" />
+                            <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Username" FontWeight="SemiBold" />
+                            <TextBox Grid.Row="1" Grid.Column="1" MinHeight="36" Text="{Binding Backup.Username, Mode=TwoWay}" Watermark="sql_login" />
 
-                        <TextBlock Grid.Row="2"
-                                   Grid.Column="0"
-                                   VerticalAlignment="Center"
-                                   Text="Password"
-                                   FontWeight="SemiBold" />
-                        <TextBox Grid.Row="2"
-                                 Grid.Column="1"
-                                 MinHeight="36"
-                                 PasswordChar="*"
-                                 Text="{Binding Backup.Password, Mode=TwoWay}"
-                                 Watermark="password" />
+                            <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Password" FontWeight="SemiBold" />
+                            <TextBox Grid.Row="2" Grid.Column="1" MinHeight="36" PasswordChar="*" Text="{Binding Backup.Password, Mode=TwoWay}" Watermark="password" />
 
-                        <TextBlock Grid.Row="3"
-                                   Grid.Column="0"
-                                   VerticalAlignment="Center"
-                                   Text="Database"
-                                   FontWeight="SemiBold" />
-                        <Grid Grid.Row="3"
-                              Grid.Column="1"
-                              ColumnDefinitions="*,Auto"
-                              ColumnSpacing="10">
-                            <ComboBox Grid.Column="0"
-                                      MinHeight="36"
-                                      ItemsSource="{Binding Backup.Databases}"
-                                      SelectedItem="{Binding Backup.SelectedDatabase, Mode=TwoWay}"
-                                      PlaceholderText="Load databases first" />
-                            <Button Grid.Column="1"
-                                    MinWidth="140"
-                                    Classes="secondary"
-                                    Content="Load Databases"
-                                    Command="{Binding Backup.LoadDatabasesCommand}" />
-                        </Grid>
-
-                        <TextBlock Grid.Row="4"
-                                   Grid.Column="0"
-                                   VerticalAlignment="Center"
-                                   Text="Output File"
-                                   FontWeight="SemiBold" />
-                        <Grid Grid.Row="4"
-                              Grid.Column="1"
-                              ColumnDefinitions="*,Auto"
-                              ColumnSpacing="10">
-                            <TextBox Grid.Column="0"
-                                     MinHeight="36"
-                                     Text="{Binding Backup.OutputPath, Mode=TwoWay}"
-                                     Watermark="/path/to/backup.bacpac" />
-                            <Button Grid.Column="1"
-                                    Classes="icon"
-                                    Command="{Binding Backup.BrowseOutputPathCommand}"
-                                    ToolTip.Tip="Choose folder and auto-generate output filename">
-                                <TextBlock Text="📁" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            </Button>
-                        </Grid>
-
-                        <StackPanel Grid.Row="5"
-                                    Grid.Column="1"
-                                    Orientation="Horizontal"
-                                    Spacing="10">
-                            <Button Content="Start Backup"
-                                    MinWidth="130"
-                                    Classes="primary"
-                                    Command="{Binding Backup.StartBackupCommand}" />
-                            <Button Content="Cancel"
-                                    MinWidth="90"
-                                    Classes="neutral"
-                                    Command="{Binding Backup.CancelBackupCommand}"
-                                    IsVisible="{Binding Backup.IsRunning}" />
-                            <Border Classes="statusChip"
-                                    VerticalAlignment="Center">
-                                <TextBlock Text="{Binding Backup.StatusMessage}"
-                                           FontWeight="SemiBold"
-                                           Foreground="#FF20466F" />
-                            </Border>
-                        </StackPanel>
-
-                        <ProgressBar Grid.Row="6"
-                                     Grid.Column="1"
-                                     Height="8"
-                                     IsIndeterminate="True"
-                                     IsVisible="{Binding Backup.IsRunning}" />
-
-                        <Border Grid.Row="7"
-                                Grid.Column="0"
-                                Grid.ColumnSpan="2"
-                                IsVisible="{Binding Backup.IsBackupCompleted}"
-                                Background="#FFDCF7E8"
-                                BorderBrush="#FF9FDEBC"
-                                BorderThickness="1"
-                                CornerRadius="12"
-                                Padding="14,12">
-                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                                <TextBlock Text="✓"
-                                           FontSize="26"
-                                           FontWeight="Bold"
-                                           Foreground="#FF157347"
-                                           VerticalAlignment="Center" />
-                                <StackPanel Grid.Column="1" Spacing="2">
-                                    <TextBlock Text="Backup Complete"
-                                               FontSize="17"
-                                               FontWeight="Bold"
-                                               Foreground="#FF0F5A37" />
-                                    <TextBlock Text="{Binding Backup.CompletionMessage}"
-                                               Foreground="#FF1E5E42"
-                                               TextWrapping="Wrap" />
-                                    <Button Content="Open Output Folder"
-                                            Margin="0,8,0,0"
-                                            HorizontalAlignment="Left"
-                                            Classes="secondary compact"
-                                            Command="{Binding Backup.OpenOutputFolderCommand}" />
-                                </StackPanel>
+                            <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Database" FontWeight="SemiBold" />
+                            <Grid Grid.Row="3" Grid.Column="1" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                <ComboBox Grid.Column="0" MinHeight="36" ItemsSource="{Binding Backup.Databases}" SelectedItem="{Binding Backup.SelectedDatabase, Mode=TwoWay}" PlaceholderText="Load databases first" />
+                                <Button Grid.Column="1" MinWidth="140" Classes="secondary" Content="Load Databases" Command="{Binding Backup.LoadDatabasesCommand}" />
                             </Grid>
-                        </Border>
 
-                        <Border Grid.Row="8"
-                                Grid.Column="0"
-                                Grid.ColumnSpan="2"
-                                BorderThickness="1"
-                                CornerRadius="12"
-                                Padding="12"
-                                BorderBrush="#FFDCE6F2"
-                                Background="#EAF8FAFF">
-                            <Grid RowDefinitions="Auto,*" RowSpacing="8">
-                                <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
-                                    <TextBlock Text="Live Operation Log"
-                                               VerticalAlignment="Center"
-                                               FontWeight="SemiBold"
-                                               Foreground="#FF1A3556" />
-                                    <Button Grid.Column="1"
-                                            Content="Open Folder"
-                                            Classes="secondary compact"
-                                            Command="{Binding Backup.OpenOutputFolderCommand}" />
-                                    <Button Grid.Column="2"
-                                            Content="Copy"
-                                            Classes="secondary compact"
-                                            Command="{Binding Backup.CopyLogsCommand}" />
-                                    <Button Grid.Column="3"
-                                            Content="Clear"
-                                            Classes="neutral compact"
-                                            Command="{Binding Backup.ClearLogsCommand}" />
+                            <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Output File" FontWeight="SemiBold" />
+                            <Grid Grid.Row="4" Grid.Column="1" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                <TextBox Grid.Column="0" MinHeight="36" Text="{Binding Backup.OutputPath, Mode=TwoWay}" Watermark="/path/to/backup.bacpac" />
+                                <Button Grid.Column="1" Classes="icon" Command="{Binding Backup.BrowseOutputPathCommand}" ToolTip.Tip="Choose folder and auto-generate output filename">
+                                    <TextBlock Text="📁" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Button>
+                            </Grid>
+
+                            <StackPanel Grid.Row="5" Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                                <Button Content="Start Backup" MinWidth="130" Classes="primary" Command="{Binding Backup.StartBackupCommand}" />
+                                <Button Content="Cancel" MinWidth="90" Classes="neutral" Command="{Binding Backup.CancelBackupCommand}" IsVisible="{Binding Backup.IsRunning}" />
+                                <Border Classes="statusChip" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Backup.StatusMessage}" FontWeight="SemiBold" Foreground="#FFCBE0FF" />
+                                </Border>
+                            </StackPanel>
+
+                            <ProgressBar Grid.Row="6" Grid.Column="1" Height="8" IsIndeterminate="True" IsVisible="{Binding Backup.IsRunning}" />
+
+                            <Border Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2" IsVisible="{Binding Backup.IsBackupCompleted}" Background="#2C2DBA7D" BorderBrush="#FF48E0AF" BorderThickness="1" CornerRadius="12" Padding="14,12">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                    <TextBlock Text="✓" FontSize="26" FontWeight="Bold" Foreground="#FF81FFD3" VerticalAlignment="Center" />
+                                    <StackPanel Grid.Column="1" Spacing="2">
+                                        <TextBlock Text="Backup Complete" FontSize="17" FontWeight="Bold" Foreground="#FFD7FFE9" />
+                                        <TextBlock Text="{Binding Backup.CompletionMessage}" Foreground="#FFB6F7DC" TextWrapping="Wrap" />
+                                        <Button Content="Open Output Folder" Margin="0,8,0,0" HorizontalAlignment="Left" Classes="secondary compact" Command="{Binding Backup.OpenOutputFolderCommand}" />
+                                    </StackPanel>
                                 </Grid>
-                                <TextBox Grid.Row="1"
-                                         Height="210"
-                                         IsReadOnly="True"
-                                         AcceptsReturn="True"
-                                         TextWrapping="Wrap"
-                                         Text="{Binding Backup.LogOutput}"
-                                         behaviors:TextBoxAutoScrollBehavior.AutoScrollToEnd="True" />
-                            </Grid>
-                        </Border>
+                            </Border>
+
+                            <Border Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="1" CornerRadius="12" Padding="12" BorderBrush="#FF3D5E92" Background="#660F182D">
+                                <Grid RowDefinitions="Auto,*" RowSpacing="8">
+                                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
+                                        <TextBlock Text="Live Operation Log" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#FFCEE1FF" />
+                                        <Button Grid.Column="1" Content="Open Folder" Classes="secondary compact" Command="{Binding Backup.OpenOutputFolderCommand}" />
+                                        <Button Grid.Column="2" Content="Copy" Classes="secondary compact" Command="{Binding Backup.CopyLogsCommand}" />
+                                        <Button Grid.Column="3" Content="Clear" Classes="neutral compact" Command="{Binding Backup.ClearLogsCommand}" />
+                                    </Grid>
+                                    <TextBox Grid.Row="1" Height="210" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" Text="{Binding Backup.LogOutput}" behaviors:TextBoxAutoScrollBehavior.AutoScrollToEnd="True" />
+                                </Grid>
+                            </Border>
                         </Grid>
                     </ScrollViewer>
                 </TabItem>
 
                 <TabItem Header="Restore">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                         <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,*"
                               ColumnDefinitions="Auto,*"
                               RowSpacing="14"
                               ColumnSpacing="14"
                               Margin="8">
-                            <TextBlock Grid.Row="0"
-                                       Grid.Column="0"
-                                       VerticalAlignment="Center"
-                                       Text="Bacpac File"
-                                       FontWeight="SemiBold" />
-                            <Grid Grid.Row="0"
-                                  Grid.Column="1"
-                                  ColumnDefinitions="*,Auto"
-                                  ColumnSpacing="10">
-                                <TextBox Grid.Column="0"
-                                         MinHeight="36"
-                                         Text="{Binding Restore.BacpacPath, Mode=TwoWay}"
-                                         Watermark="/path/to/backup.bacpac" />
-                                <Button Grid.Column="1"
-                                        Classes="icon"
-                                        Command="{Binding Restore.BrowseBacpacPathCommand}"
-                                        ToolTip.Tip="Choose bacpac file">
+                            <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Bacpac File" FontWeight="SemiBold" />
+                            <Grid Grid.Row="0" Grid.Column="1" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                <TextBox Grid.Column="0" MinHeight="36" Text="{Binding Restore.BacpacPath, Mode=TwoWay}" Watermark="/path/to/backup.bacpac" />
+                                <Button Grid.Column="1" Classes="icon" Command="{Binding Restore.BrowseBacpacPathCommand}" ToolTip.Tip="Choose bacpac file">
                                     <TextBlock Text="📄" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Button>
                             </Grid>
 
-                            <TextBlock Grid.Row="1"
-                                       Grid.Column="0"
-                                       VerticalAlignment="Center"
-                                       Text="SQL Server"
-                                       FontWeight="SemiBold" />
-                            <TextBox Grid.Row="1"
-                                     Grid.Column="1"
-                                     MinHeight="36"
-                                     Text="{Binding Restore.Server, Mode=TwoWay}"
-                                     Watermark="localhost,1433 or myserver.database.windows.net" />
+                            <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="SQL Server" FontWeight="SemiBold" />
+                            <TextBox Grid.Row="1" Grid.Column="1" MinHeight="36" Text="{Binding Restore.Server, Mode=TwoWay}" Watermark="localhost,1433 or myserver.database.windows.net" />
 
-                            <TextBlock Grid.Row="2"
-                                       Grid.Column="0"
-                                       VerticalAlignment="Center"
-                                       Text="Username"
-                                       FontWeight="SemiBold" />
-                            <TextBox Grid.Row="2"
-                                     Grid.Column="1"
-                                     MinHeight="36"
-                                     Text="{Binding Restore.Username, Mode=TwoWay}"
-                                     Watermark="sql_login" />
+                            <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Username" FontWeight="SemiBold" />
+                            <TextBox Grid.Row="2" Grid.Column="1" MinHeight="36" Text="{Binding Restore.Username, Mode=TwoWay}" Watermark="sql_login" />
 
-                            <TextBlock Grid.Row="3"
-                                       Grid.Column="0"
-                                       VerticalAlignment="Center"
-                                       Text="Password"
-                                       FontWeight="SemiBold" />
-                            <TextBox Grid.Row="3"
-                                     Grid.Column="1"
-                                     MinHeight="36"
-                                     PasswordChar="*"
-                                     Text="{Binding Restore.Password, Mode=TwoWay}"
-                                     Watermark="password" />
+                            <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Password" FontWeight="SemiBold" />
+                            <TextBox Grid.Row="3" Grid.Column="1" MinHeight="36" PasswordChar="*" Text="{Binding Restore.Password, Mode=TwoWay}" Watermark="password" />
 
-                            <TextBlock Grid.Row="4"
-                                       Grid.Column="0"
-                                       VerticalAlignment="Center"
-                                       Text="Target Mode"
-                                       FontWeight="SemiBold" />
-                            <CheckBox Grid.Row="4"
-                                      Grid.Column="1"
-                                      Content="Create a new database"
-                                      IsChecked="{Binding Restore.CreateNewDatabase, Mode=TwoWay}" />
+                            <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Target Mode" FontWeight="SemiBold" />
+                            <CheckBox Grid.Row="4" Grid.Column="1" Content="Create a new database" IsChecked="{Binding Restore.CreateNewDatabase, Mode=TwoWay}" Foreground="#FFE3EBFF" />
 
-                            <TextBlock Grid.Row="5"
-                                       Grid.Column="0"
-                                       VerticalAlignment="Center"
-                                       IsVisible="{Binding Restore.IsExistingDatabaseMode}"
-                                       Text="Existing DB"
-                                       FontWeight="SemiBold" />
-                            <Grid Grid.Row="5"
-                                  Grid.Column="1"
-                                  IsVisible="{Binding Restore.IsExistingDatabaseMode}"
-                                  ColumnDefinitions="*,Auto"
-                                  ColumnSpacing="10">
-                                <ComboBox Grid.Column="0"
-                                          MinHeight="36"
-                                          ItemsSource="{Binding Restore.Databases}"
-                                          SelectedItem="{Binding Restore.SelectedDatabase, Mode=TwoWay}"
-                                          PlaceholderText="Load databases first" />
-                                <Button Grid.Column="1"
-                                        MinWidth="140"
-                                        Classes="secondary"
-                                        Content="Load Databases"
-                                        Command="{Binding Restore.LoadDatabasesCommand}" />
+                            <TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" IsVisible="{Binding Restore.IsExistingDatabaseMode}" Text="Existing DB" FontWeight="SemiBold" />
+                            <Grid Grid.Row="5" Grid.Column="1" IsVisible="{Binding Restore.IsExistingDatabaseMode}" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                <ComboBox Grid.Column="0" MinHeight="36" ItemsSource="{Binding Restore.Databases}" SelectedItem="{Binding Restore.SelectedDatabase, Mode=TwoWay}" PlaceholderText="Load databases first" />
+                                <Button Grid.Column="1" MinWidth="140" Classes="secondary" Content="Load Databases" Command="{Binding Restore.LoadDatabasesCommand}" />
                             </Grid>
 
-                            <TextBlock Grid.Row="6"
-                                       Grid.Column="0"
-                                       VerticalAlignment="Center"
-                                       IsVisible="{Binding Restore.CreateNewDatabase}"
-                                       Text="New DB Name"
-                                       FontWeight="SemiBold" />
-                            <TextBox Grid.Row="6"
-                                     Grid.Column="1"
-                                     IsVisible="{Binding Restore.CreateNewDatabase}"
-                                     MinHeight="36"
-                                     Text="{Binding Restore.NewDatabaseName, Mode=TwoWay}"
-                                     Watermark="my_restored_database" />
+                            <TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" IsVisible="{Binding Restore.CreateNewDatabase}" Text="New DB Name" FontWeight="SemiBold" />
+                            <TextBox Grid.Row="6" Grid.Column="1" IsVisible="{Binding Restore.CreateNewDatabase}" MinHeight="36" Text="{Binding Restore.NewDatabaseName, Mode=TwoWay}" Watermark="my_restored_database" />
 
-                            <StackPanel Grid.Row="7"
-                                        Grid.Column="1"
-                                        Orientation="Horizontal"
-                                        Spacing="10">
-                                <Button Content="Start Restore"
-                                        MinWidth="130"
-                                        Classes="primary"
-                                        Command="{Binding Restore.StartRestoreCommand}" />
-                                <Button Content="Cancel"
-                                        MinWidth="90"
-                                        Classes="neutral"
-                                        Command="{Binding Restore.CancelRestoreCommand}"
-                                        IsVisible="{Binding Restore.IsRunning}" />
-                                <Border Classes="statusChip"
-                                        VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Restore.StatusMessage}"
-                                               FontWeight="SemiBold"
-                                               Foreground="#FF20466F" />
+                            <StackPanel Grid.Row="7" Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                                <Button Content="Start Restore" MinWidth="130" Classes="primary" Command="{Binding Restore.StartRestoreCommand}" />
+                                <Button Content="Cancel" MinWidth="90" Classes="neutral" Command="{Binding Restore.CancelRestoreCommand}" IsVisible="{Binding Restore.IsRunning}" />
+                                <Border Classes="statusChip" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Restore.StatusMessage}" FontWeight="SemiBold" Foreground="#FFCBE0FF" />
                                 </Border>
                             </StackPanel>
 
-                            <ProgressBar Grid.Row="8"
-                                         Grid.Column="1"
-                                         Height="8"
-                                         IsIndeterminate="True"
-                                         IsVisible="{Binding Restore.IsRunning}" />
+                            <ProgressBar Grid.Row="8" Grid.Column="1" Height="8" IsIndeterminate="True" IsVisible="{Binding Restore.IsRunning}" />
 
-                            <Border Grid.Row="9"
-                                    Grid.Column="0"
-                                    Grid.ColumnSpan="2"
-                                    IsVisible="{Binding Restore.IsRestoreCompleted}"
-                                    Background="#FFDCF7E8"
-                                    BorderBrush="#FF9FDEBC"
-                                    BorderThickness="1"
-                                    CornerRadius="12"
-                                    Padding="14,12">
+                            <Border Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2" IsVisible="{Binding Restore.IsRestoreCompleted}" Background="#2C2DBA7D" BorderBrush="#FF48E0AF" BorderThickness="1" CornerRadius="12" Padding="14,12">
                                 <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                                    <TextBlock Text="✓"
-                                               FontSize="26"
-                                               FontWeight="Bold"
-                                               Foreground="#FF157347"
-                                               VerticalAlignment="Center" />
+                                    <TextBlock Text="✓" FontSize="26" FontWeight="Bold" Foreground="#FF81FFD3" VerticalAlignment="Center" />
                                     <StackPanel Grid.Column="1" Spacing="2">
-                                        <TextBlock Text="Restore Complete"
-                                                   FontSize="17"
-                                                   FontWeight="Bold"
-                                                   Foreground="#FF0F5A37" />
-                                        <TextBlock Text="{Binding Restore.CompletionMessage}"
-                                                   Foreground="#FF1E5E42"
-                                                   TextWrapping="Wrap" />
-                                        <Button Content="Open Bacpac Folder"
-                                                Margin="0,8,0,0"
-                                                HorizontalAlignment="Left"
-                                                Classes="secondary compact"
-                                                Command="{Binding Restore.OpenBacpacFolderCommand}" />
+                                        <TextBlock Text="Restore Complete" FontSize="17" FontWeight="Bold" Foreground="#FFD7FFE9" />
+                                        <TextBlock Text="{Binding Restore.CompletionMessage}" Foreground="#FFB6F7DC" TextWrapping="Wrap" />
+                                        <Button Content="Open Bacpac Folder" Margin="0,8,0,0" HorizontalAlignment="Left" Classes="secondary compact" Command="{Binding Restore.OpenBacpacFolderCommand}" />
                                     </StackPanel>
                                 </Grid>
                             </Border>
 
-                            <Border Grid.Row="10"
-                                    Grid.Column="0"
-                                    Grid.ColumnSpan="2"
-                                    BorderThickness="1"
-                                    CornerRadius="12"
-                                    Padding="12"
-                                    BorderBrush="#FFDCE6F2"
-                                    Background="#EAF8FAFF">
+                            <Border Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="1" CornerRadius="12" Padding="12" BorderBrush="#FF3D5E92" Background="#660F182D">
                                 <Grid RowDefinitions="Auto,*" RowSpacing="8">
                                     <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
-                                        <TextBlock Text="Live Operation Log"
-                                                   VerticalAlignment="Center"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="#FF1A3556" />
-                                        <Button Grid.Column="1"
-                                                Content="Open Folder"
-                                                Classes="secondary compact"
-                                                Command="{Binding Restore.OpenBacpacFolderCommand}" />
-                                        <Button Grid.Column="2"
-                                                Content="Copy"
-                                                Classes="secondary compact"
-                                                Command="{Binding Restore.CopyLogsCommand}" />
-                                        <Button Grid.Column="3"
-                                                Content="Clear"
-                                                Classes="neutral compact"
-                                                Command="{Binding Restore.ClearLogsCommand}" />
+                                        <TextBlock Text="Live Operation Log" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#FFCEE1FF" />
+                                        <Button Grid.Column="1" Content="Open Folder" Classes="secondary compact" Command="{Binding Restore.OpenBacpacFolderCommand}" />
+                                        <Button Grid.Column="2" Content="Copy" Classes="secondary compact" Command="{Binding Restore.CopyLogsCommand}" />
+                                        <Button Grid.Column="3" Content="Clear" Classes="neutral compact" Command="{Binding Restore.ClearLogsCommand}" />
                                     </Grid>
-                                    <TextBox Grid.Row="1"
-                                             Height="260"
-                                             IsReadOnly="True"
-                                             AcceptsReturn="True"
-                                             TextWrapping="Wrap"
-                                             Text="{Binding Restore.LogOutput}"
-                                             behaviors:TextBoxAutoScrollBehavior.AutoScrollToEnd="True" />
+                                    <TextBox Grid.Row="1" Height="260" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" Text="{Binding Restore.LogOutput}" behaviors:TextBoxAutoScrollBehavior.AutoScrollToEnd="True" />
                                 </Grid>
                             </Border>
                         </Grid>
