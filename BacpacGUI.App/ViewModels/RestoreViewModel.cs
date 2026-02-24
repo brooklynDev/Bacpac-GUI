@@ -15,6 +15,7 @@ public partial class RestoreViewModel : ObservableObject
 
     private readonly ISqlPackageService _sqlPackageService;
     private readonly IFilePickerService _filePickerService;
+    private readonly IUserInteractionService _userInteractionService;
     private CancellationTokenSource? _cancellationTokenSource;
 
     [ObservableProperty]
@@ -54,6 +55,9 @@ public partial class RestoreViewModel : ObservableObject
     private string completionMessage = string.Empty;
 
     [ObservableProperty]
+    private string statusMessage = "Ready";
+
+    [ObservableProperty]
     private string logOutput = string.Empty;
 
     [ObservableProperty]
@@ -69,15 +73,28 @@ public partial class RestoreViewModel : ObservableObject
 
     public IRelayCommand CancelRestoreCommand { get; }
 
-    public RestoreViewModel(ISqlPackageService sqlPackageService, IFilePickerService filePickerService)
+    public IAsyncRelayCommand CopyLogsCommand { get; }
+
+    public IRelayCommand ClearLogsCommand { get; }
+
+    public IAsyncRelayCommand OpenBacpacFolderCommand { get; }
+
+    public RestoreViewModel(
+        ISqlPackageService sqlPackageService,
+        IFilePickerService filePickerService,
+        IUserInteractionService userInteractionService)
     {
         _sqlPackageService = sqlPackageService;
         _filePickerService = filePickerService;
+        _userInteractionService = userInteractionService;
 
         BrowseBacpacPathCommand = new AsyncRelayCommand(BrowseBacpacPathAsync, CanBrowseOrLoad);
         LoadDatabasesCommand = new AsyncRelayCommand(LoadDatabasesAsync, CanBrowseOrLoad);
         StartRestoreCommand = new AsyncRelayCommand(StartRestoreAsync, CanStartRestore);
         CancelRestoreCommand = new RelayCommand(CancelRestore, () => IsRunning);
+        CopyLogsCommand = new AsyncRelayCommand(CopyLogsAsync, CanCopyLogs);
+        ClearLogsCommand = new RelayCommand(ClearLogs, CanClearLogs);
+        OpenBacpacFolderCommand = new AsyncRelayCommand(OpenBacpacFolderAsync, CanOpenBacpacFolder);
     }
 
     partial void OnCreateNewDatabaseChanged(bool value)
@@ -91,6 +108,7 @@ public partial class RestoreViewModel : ObservableObject
         LoadDatabasesCommand.NotifyCanExecuteChanged();
         StartRestoreCommand.NotifyCanExecuteChanged();
         CancelRestoreCommand.NotifyCanExecuteChanged();
+        OpenBacpacFolderCommand.NotifyCanExecuteChanged();
     }
 
     partial void OnIsLoadingDatabasesChanged(bool value)
@@ -100,9 +118,26 @@ public partial class RestoreViewModel : ObservableObject
         StartRestoreCommand.NotifyCanExecuteChanged();
     }
 
+    partial void OnLogOutputChanged(string value)
+    {
+        CopyLogsCommand.NotifyCanExecuteChanged();
+        ClearLogsCommand.NotifyCanExecuteChanged();
+    }
+
+    partial void OnBacpacPathChanged(string value)
+    {
+        OpenBacpacFolderCommand.NotifyCanExecuteChanged();
+    }
+
     private bool CanBrowseOrLoad() => !IsRunning && !IsLoadingDatabases;
 
     private bool CanStartRestore() => !IsRunning && !IsLoadingDatabases;
+
+    private bool CanCopyLogs() => !string.IsNullOrWhiteSpace(LogOutput);
+
+    private bool CanClearLogs() => !string.IsNullOrWhiteSpace(LogOutput);
+
+    private bool CanOpenBacpacFolder() => !IsRunning && !string.IsNullOrWhiteSpace(BacpacPath);
 
     private async Task BrowseBacpacPathAsync()
     {
@@ -129,21 +164,26 @@ public partial class RestoreViewModel : ObservableObject
 
     private async Task LoadDatabasesAsync()
     {
+        StatusMessage = "Loading databases...";
+
         if (string.IsNullOrWhiteSpace(Server))
         {
             AppendHighlight("Server is required.");
+            StatusMessage = "Server required";
             return;
         }
 
         if (string.IsNullOrWhiteSpace(Username))
         {
             AppendHighlight("Username is required.");
+            StatusMessage = "Username required";
             return;
         }
 
         if (string.IsNullOrWhiteSpace(Password))
         {
             AppendHighlight("Password is required.");
+            StatusMessage = "Password required";
             return;
         }
 
@@ -162,10 +202,12 @@ public partial class RestoreViewModel : ObservableObject
 
             SelectedDatabase = Databases.FirstOrDefault();
             AppendHighlight($"Found {Databases.Count} available database(s).");
+            StatusMessage = $"{Databases.Count} database(s) ready";
         }
         catch (Exception ex)
         {
             AppendHighlight($"Failed to load databases: {ex.Message}");
+            StatusMessage = "Database load failed";
         }
         finally
         {
@@ -178,28 +220,33 @@ public partial class RestoreViewModel : ObservableObject
         ClearHighlights();
         IsRestoreCompleted = false;
         CompletionMessage = string.Empty;
+        StatusMessage = "Running restore...";
 
         if (string.IsNullOrWhiteSpace(BacpacPath))
         {
             AppendHighlight("Bacpac file path is required.");
+            StatusMessage = "Bacpac file required";
             return;
         }
 
         if (string.IsNullOrWhiteSpace(Server))
         {
             AppendHighlight("Server is required.");
+            StatusMessage = "Server required";
             return;
         }
 
         if (string.IsNullOrWhiteSpace(Username))
         {
             AppendHighlight("Username is required.");
+            StatusMessage = "Username required";
             return;
         }
 
         if (string.IsNullOrWhiteSpace(Password))
         {
             AppendHighlight("Password is required.");
+            StatusMessage = "Password required";
             return;
         }
 
@@ -209,6 +256,7 @@ public partial class RestoreViewModel : ObservableObject
             AppendHighlight(CreateNewDatabase
                 ? "New database name is required."
                 : "Select an existing database or choose new database mode.");
+            StatusMessage = "Target database required";
             return;
         }
 
@@ -225,16 +273,19 @@ public partial class RestoreViewModel : ObservableObject
             AppendHighlight("Restore completed successfully.");
             CompletionMessage = $"Database ready: {targetDatabase}";
             IsRestoreCompleted = true;
+            StatusMessage = "Restore complete";
         }
         catch (OperationCanceledException)
         {
             AppendHighlight("Restore canceled.");
             IsRestoreCompleted = false;
+            StatusMessage = "Restore canceled";
         }
         catch (Exception ex)
         {
             AppendHighlight($"Restore failed: {ex.Message}");
             IsRestoreCompleted = false;
+            StatusMessage = "Restore failed";
         }
         finally
         {
@@ -247,6 +298,38 @@ public partial class RestoreViewModel : ObservableObject
     private void CancelRestore()
     {
         _cancellationTokenSource?.Cancel();
+    }
+
+    private async Task CopyLogsAsync()
+    {
+        try
+        {
+            await _userInteractionService.CopyToClipboardAsync(LogOutput, CancellationToken.None);
+            AppendHighlight("Logs copied to clipboard.");
+        }
+        catch (Exception ex)
+        {
+            AppendHighlight($"Could not copy logs: {ex.Message}");
+        }
+    }
+
+    private async Task OpenBacpacFolderAsync()
+    {
+        try
+        {
+            await _userInteractionService.OpenPathInFileManagerAsync(BacpacPath, CancellationToken.None);
+            AppendHighlight("Opened bacpac location.");
+        }
+        catch (Exception ex)
+        {
+            AppendHighlight($"Could not open bacpac location: {ex.Message}");
+        }
+    }
+
+    private void ClearLogs()
+    {
+        ClearHighlights();
+        StatusMessage = "Ready";
     }
 
     private void ClearHighlights()

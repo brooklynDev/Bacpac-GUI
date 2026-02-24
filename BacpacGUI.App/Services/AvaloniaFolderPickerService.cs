@@ -6,6 +6,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 
 namespace BacpacGUI.App.Services;
 
+#pragma warning disable CS0618
 public sealed class AvaloniaFolderPickerService : IFolderPickerService
 {
     public async Task<string?> PickFolderAsync(CancellationToken token)
@@ -27,3 +28,4 @@ public sealed class AvaloniaFolderPickerService : IFolderPickerService
         return string.IsNullOrWhiteSpace(folderPath) ? null : folderPath;
     }
 }
+#pragma warning restore CS0618

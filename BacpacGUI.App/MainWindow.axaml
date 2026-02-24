@@ -64,6 +64,17 @@
             <Setter Property="BorderBrush" Value="#FFC9DDF4" />
             <Setter Property="BorderThickness" Value="1" />
         </Style>
+        <Style Selector="Button.compact">
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+        <Style Selector="Border.statusChip">
+            <Setter Property="Background" Value="#FFF2F8FF" />
+            <Setter Property="BorderBrush" Value="#FFC9DDF4" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="999" />
+            <Setter Property="Padding" Value="10,4" />
+        </Style>
     </Window.Styles>
 
     <Grid RowDefinitions="Auto,*" Margin="24">
@@ -206,6 +217,12 @@
                                     Classes="neutral"
                                     Command="{Binding Backup.CancelBackupCommand}"
                                     IsVisible="{Binding Backup.IsRunning}" />
+                            <Border Classes="statusChip"
+                                    VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Backup.StatusMessage}"
+                                           FontWeight="SemiBold"
+                                           Foreground="#FF20466F" />
+                            </Border>
                         </StackPanel>
 
                         <ProgressBar Grid.Row="6"
@@ -237,6 +254,11 @@
                                     <TextBlock Text="{Binding Backup.CompletionMessage}"
                                                Foreground="#FF1E5E42"
                                                TextWrapping="Wrap" />
+                                    <Button Content="Open Output Folder"
+                                            Margin="0,8,0,0"
+                                            HorizontalAlignment="Left"
+                                            Classes="secondary compact"
+                                            Command="{Binding Backup.OpenOutputFolderCommand}" />
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -249,14 +271,32 @@
                                 Padding="12"
                                 BorderBrush="#FFDCE6F2"
                                 Background="#EAF8FAFF">
-                            <Grid RowDefinitions="*">
-                                <TextBox Grid.Row="0"
-                                 Height="210"
-                                 IsReadOnly="True"
-                                 AcceptsReturn="True"
-                                 TextWrapping="Wrap"
-                                 Text="{Binding Backup.LogOutput}"
-                                 behaviors:TextBoxAutoScrollBehavior.AutoScrollToEnd="True" />
+                            <Grid RowDefinitions="Auto,*" RowSpacing="8">
+                                <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
+                                    <TextBlock Text="Live Operation Log"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               Foreground="#FF1A3556" />
+                                    <Button Grid.Column="1"
+                                            Content="Open Folder"
+                                            Classes="secondary compact"
+                                            Command="{Binding Backup.OpenOutputFolderCommand}" />
+                                    <Button Grid.Column="2"
+                                            Content="Copy"
+                                            Classes="secondary compact"
+                                            Command="{Binding Backup.CopyLogsCommand}" />
+                                    <Button Grid.Column="3"
+                                            Content="Clear"
+                                            Classes="neutral compact"
+                                            Command="{Binding Backup.ClearLogsCommand}" />
+                                </Grid>
+                                <TextBox Grid.Row="1"
+                                         Height="210"
+                                         IsReadOnly="True"
+                                         AcceptsReturn="True"
+                                         TextWrapping="Wrap"
+                                         Text="{Binding Backup.LogOutput}"
+                                         behaviors:TextBoxAutoScrollBehavior.AutoScrollToEnd="True" />
                             </Grid>
                         </Border>
                         </Grid>
@@ -385,6 +425,12 @@
                                         Classes="neutral"
                                         Command="{Binding Restore.CancelRestoreCommand}"
                                         IsVisible="{Binding Restore.IsRunning}" />
+                                <Border Classes="statusChip"
+                                        VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Restore.StatusMessage}"
+                                               FontWeight="SemiBold"
+                                               Foreground="#FF20466F" />
+                                </Border>
                             </StackPanel>
 
                             <ProgressBar Grid.Row="8"
@@ -416,6 +462,11 @@
                                         <TextBlock Text="{Binding Restore.CompletionMessage}"
                                                    Foreground="#FF1E5E42"
                                                    TextWrapping="Wrap" />
+                                        <Button Content="Open Bacpac Folder"
+                                                Margin="0,8,0,0"
+                                                HorizontalAlignment="Left"
+                                                Classes="secondary compact"
+                                                Command="{Binding Restore.OpenBacpacFolderCommand}" />
                                     </StackPanel>
                                 </Grid>
                             </Border>
@@ -428,8 +479,26 @@
                                     Padding="12"
                                     BorderBrush="#FFDCE6F2"
                                     Background="#EAF8FAFF">
-                                <Grid RowDefinitions="*">
-                                    <TextBox Grid.Row="0"
+                                <Grid RowDefinitions="Auto,*" RowSpacing="8">
+                                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
+                                        <TextBlock Text="Live Operation Log"
+                                                   VerticalAlignment="Center"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#FF1A3556" />
+                                        <Button Grid.Column="1"
+                                                Content="Open Folder"
+                                                Classes="secondary compact"
+                                                Command="{Binding Restore.OpenBacpacFolderCommand}" />
+                                        <Button Grid.Column="2"
+                                                Content="Copy"
+                                                Classes="secondary compact"
+                                                Command="{Binding Restore.CopyLogsCommand}" />
+                                        <Button Grid.Column="3"
+                                                Content="Clear"
+                                                Classes="neutral compact"
+                                                Command="{Binding Restore.ClearLogsCommand}" />
+                                    </Grid>
+                                    <TextBox Grid.Row="1"
                                              Height="260"
                                              IsReadOnly="True"
                                              AcceptsReturn="True"

@@ -16,6 +16,7 @@ public partial class BackupViewModel : ObservableObject
 
     private readonly ISqlPackageService _sqlPackageService;
     private readonly IFolderPickerService _folderPickerService;
+    private readonly IUserInteractionService _userInteractionService;
     private CancellationTokenSource? _cancellationTokenSource;
 
     [ObservableProperty]
@@ -49,6 +50,9 @@ public partial class BackupViewModel : ObservableObject
     private string completionMessage = string.Empty;
 
     [ObservableProperty]
+    private string statusMessage = "Ready";
+
+    [ObservableProperty]
     private string logOutput = string.Empty;
 
     [ObservableProperty]
@@ -62,14 +66,28 @@ public partial class BackupViewModel : ObservableObject
 
     public IRelayCommand CancelBackupCommand { get; }
 
-    public BackupViewModel(ISqlPackageService sqlPackageService, IFolderPickerService folderPickerService)
+    public IAsyncRelayCommand CopyLogsCommand { get; }
+
+    public IRelayCommand ClearLogsCommand { get; }
+
+    public IAsyncRelayCommand OpenOutputFolderCommand { get; }
+
+    public BackupViewModel(
+        ISqlPackageService sqlPackageService,
+        IFolderPickerService folderPickerService,
+        IUserInteractionService userInteractionService)
     {
         _sqlPackageService = sqlPackageService;
         _folderPickerService = folderPickerService;
+        _userInteractionService = userInteractionService;
+
         LoadDatabasesCommand = new AsyncRelayCommand(LoadDatabasesAsync, CanLoadDatabases);
         BrowseOutputPathCommand = new AsyncRelayCommand(BrowseOutputPathAsync, CanBrowseOutputPath);
         StartBackupCommand = new AsyncRelayCommand(StartBackupAsync, CanStartBackup);
         CancelBackupCommand = new RelayCommand(CancelBackup, () => IsRunning);
+        CopyLogsCommand = new AsyncRelayCommand(CopyLogsAsync, CanCopyLogs);
+        ClearLogsCommand = new RelayCommand(ClearLogs, CanClearLogs);
+        OpenOutputFolderCommand = new AsyncRelayCommand(OpenOutputFolderAsync, CanOpenOutputFolder);
     }
 
     partial void OnIsRunningChanged(bool value)
@@ -78,6 +96,7 @@ public partial class BackupViewModel : ObservableObject
         BrowseOutputPathCommand.NotifyCanExecuteChanged();
         StartBackupCommand.NotifyCanExecuteChanged();
         CancelBackupCommand.NotifyCanExecuteChanged();
+        OpenOutputFolderCommand.NotifyCanExecuteChanged();
     }
 
     partial void OnIsLoadingDatabasesChanged(bool value)
@@ -87,31 +106,52 @@ public partial class BackupViewModel : ObservableObject
         StartBackupCommand.NotifyCanExecuteChanged();
     }
 
+    partial void OnLogOutputChanged(string value)
+    {
+        CopyLogsCommand.NotifyCanExecuteChanged();
+        ClearLogsCommand.NotifyCanExecuteChanged();
+    }
+
+    partial void OnOutputPathChanged(string value)
+    {
+        OpenOutputFolderCommand.NotifyCanExecuteChanged();
+    }
+
     private bool CanLoadDatabases() => !IsRunning && !IsLoadingDatabases;
 
     private bool CanBrowseOutputPath() => !IsRunning && !IsLoadingDatabases;
 
     private bool CanStartBackup() => !IsRunning && !IsLoadingDatabases;
 
+    private bool CanCopyLogs() => !string.IsNullOrWhiteSpace(LogOutput);
+
+    private bool CanClearLogs() => !string.IsNullOrWhiteSpace(LogOutput);
+
+    private bool CanOpenOutputFolder() => !IsRunning && !string.IsNullOrWhiteSpace(OutputPath);
+
     private async Task LoadDatabasesAsync()
     {
         ClearHighlights();
+        StatusMessage = "Loading databases...";
 
         if (string.IsNullOrWhiteSpace(Server))
         {
             AppendHighlight("Server is required.");
+            StatusMessage = "Server required";
             return;
         }
 
         if (string.IsNullOrWhiteSpace(Username))
         {
             AppendHighlight("Username is required.");
+            StatusMessage = "Username required";
             return;
         }
 
         if (string.IsNullOrWhiteSpace(Password))
         {
             AppendHighlight("Password is required.");
+            StatusMessage = "Password required";
             return;
         }
 
@@ -130,10 +170,12 @@ public partial class BackupViewModel : ObservableObject
 
             SelectedDatabase = Databases.FirstOrDefault();
             AppendHighlight($"Found {Databases.Count} available database(s).");
+            StatusMessage = $"{Databases.Count} database(s) ready";
         }
         catch (Exception ex)
         {
             AppendHighlight($"Failed to load databases: {ex.Message}");
+            StatusMessage = "Database load failed";
         }
         finally
         {
@@ -172,34 +214,40 @@ public partial class BackupViewModel : ObservableObject
         ClearHighlights();
         IsBackupCompleted = false;
         CompletionMessage = string.Empty;
+        StatusMessage = "Running backup...";
 
         if (string.IsNullOrWhiteSpace(Server))
         {
             AppendHighlight("Server is required.");
+            StatusMessage = "Server required";
             return;
         }
 
         if (string.IsNullOrWhiteSpace(Username))
         {
             AppendHighlight("Username is required.");
+            StatusMessage = "Username required";
             return;
         }
 
         if (string.IsNullOrWhiteSpace(Password))
         {
             AppendHighlight("Password is required.");
+            StatusMessage = "Password required";
             return;
         }
 
         if (string.IsNullOrWhiteSpace(SelectedDatabase))
         {
             AppendHighlight("Select a database first.");
+            StatusMessage = "Database required";
             return;
         }
 
         if (string.IsNullOrWhiteSpace(OutputPath))
         {
             AppendHighlight("Output file path is required.");
+            StatusMessage = "Output path required";
             return;
         }
 
@@ -216,16 +264,19 @@ public partial class BackupViewModel : ObservableObject
             AppendHighlight("Backup completed successfully.");
             CompletionMessage = $"Backup created at: {OutputPath}";
             IsBackupCompleted = true;
+            StatusMessage = "Backup complete";
         }
         catch (OperationCanceledException)
         {
             AppendHighlight("Backup canceled.");
             IsBackupCompleted = false;
+            StatusMessage = "Backup canceled";
         }
         catch (Exception ex)
         {
             AppendHighlight($"Backup failed: {ex.Message}");
             IsBackupCompleted = false;
+            StatusMessage = "Backup failed";
         }
         finally
         {
@@ -238,6 +289,38 @@ public partial class BackupViewModel : ObservableObject
     private void CancelBackup()
     {
         _cancellationTokenSource?.Cancel();
+    }
+
+    private async Task CopyLogsAsync()
+    {
+        try
+        {
+            await _userInteractionService.CopyToClipboardAsync(LogOutput, CancellationToken.None);
+            AppendHighlight("Logs copied to clipboard.");
+        }
+        catch (Exception ex)
+        {
+            AppendHighlight($"Could not copy logs: {ex.Message}");
+        }
+    }
+
+    private async Task OpenOutputFolderAsync()
+    {
+        try
+        {
+            await _userInteractionService.OpenPathInFileManagerAsync(OutputPath, CancellationToken.None);
+            AppendHighlight("Opened output location.");
+        }
+        catch (Exception ex)
+        {
+            AppendHighlight($"Could not open output location: {ex.Message}");
+        }
+    }
+
+    private void ClearLogs()
+    {
+        ClearHighlights();
+        StatusMessage = "Ready";
     }
 
     private void ClearHighlights()

@@ -8,6 +8,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 
 namespace BacpacGUI.App.Services;
 
+#pragma warning disable CS0618
 public sealed class AvaloniaFilePickerService : IFilePickerService
 {
     public async Task<string?> PickBacpacFileAsync(CancellationToken token)
@@ -35,3 +36,4 @@ public sealed class AvaloniaFilePickerService : IFilePickerService
         return files?.FirstOrDefault();
     }
 }
+#pragma warning restore CS0618
