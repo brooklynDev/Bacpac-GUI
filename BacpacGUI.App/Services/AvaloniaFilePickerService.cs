@@ -1,9 +1,10 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Platform.Storage;
 
 namespace BacpacGUI.App.Services;
 
@@ -12,20 +13,25 @@ public sealed class AvaloniaFilePickerService : IFilePickerService
     public async Task<string?> PickBacpacFileAsync(CancellationToken token)
     {
         if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop ||
-            desktop.MainWindow?.StorageProvider is null)
+            desktop.MainWindow is null)
         {
             return null;
         }
 
-        var files = await desktop.MainWindow.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        var dialog = new OpenFileDialog
         {
+            Title = "Choose bacpac file",
             AllowMultiple = false,
-            Title = "Choose bacpac file"
-        });
+            Filters = new List<FileDialogFilter>
+            {
+                new() { Name = "Bacpac files", Extensions = new List<string> { "bacpac" } },
+                new() { Name = "All files", Extensions = new List<string> { "*" } }
+            }
+        };
 
+        var files = await dialog.ShowAsync(desktop.MainWindow);
         token.ThrowIfCancellationRequested();
 
-        var file = files.FirstOrDefault();
-        return file?.TryGetLocalPath();
+        return files?.FirstOrDefault();
     }
 }
