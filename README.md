@@ -34,3 +34,11 @@ Outputs:
 - Uses in-process DacFx (no `sqlpackage` dependency).
 - Packaging uses `PublishSingleFile=false` for DacFx compatibility.
 - SQL connections are created with `Encrypt=true` and `TrustServerCertificate=true`.
+
+## macOS Gatekeeper
+
+If macOS blocks opening the downloaded app, remove quarantine attributes:
+
+```bash
+xattr -dr com.apple.quarantine "Bacpac GUI (Apple Silicon).app"
+```
