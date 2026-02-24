@@ -4,6 +4,7 @@ APP_PROJECT := BacpacGUI.Desktop/BacpacGUI.Desktop.csproj
 SOLUTION := BacpacGUI.sln
 PACKAGE_SCRIPT := scripts/package-macos.sh
 WINDOWS_PACKAGE_SCRIPT := scripts/package-windows.sh
+LINUX_PACKAGE_SCRIPT := scripts/package-linux.sh
 
 .PHONY: build run publish
 
@@ -16,3 +17,4 @@ run:
 publish:
 	$(PACKAGE_SCRIPT)
 	$(WINDOWS_PACKAGE_SCRIPT)
+	$(LINUX_PACKAGE_SCRIPT)

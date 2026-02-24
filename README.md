@@ -32,6 +32,7 @@ Outputs:
 - `artifacts/macos/BacpacGUI-macOS-AppleSilicon.zip`
 - `artifacts/macos/BacpacGUI-macOS-Intel.zip`
 - `artifacts/windows/BacpacGUI-Windows-x64.zip`
+- `artifacts/linux/BacpacGUI-Linux-x64.tar.gz`
 
 ## Notes
 
