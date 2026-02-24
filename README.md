@@ -2,6 +2,10 @@
 
 Cross-platform desktop utility for SQL Server `.bacpac` backup and restore.
 
+## Screenshot
+
+![Bacpac GUI](docs/screenshot.png)
+
 ## Releases
 
 Download prebuilt artifacts here:
