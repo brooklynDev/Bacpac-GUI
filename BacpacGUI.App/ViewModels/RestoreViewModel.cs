@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BacpacGUI.App.Services;
@@ -13,16 +14,44 @@ public partial class RestoreViewModel : ObservableObject
     private const int MaxHighlights = 300;
 
     private readonly ISqlPackageService _sqlPackageService;
+    private readonly IFilePickerService _filePickerService;
     private CancellationTokenSource? _cancellationTokenSource;
 
     [ObservableProperty]
     private string bacpacPath = string.Empty;
 
     [ObservableProperty]
-    private string connectionString = string.Empty;
+    private string server = string.Empty;
+
+    [ObservableProperty]
+    private string username = string.Empty;
+
+    [ObservableProperty]
+    private string password = string.Empty;
+
+    [ObservableProperty]
+    private ObservableCollection<string> databases = new();
+
+    [ObservableProperty]
+    private string? selectedDatabase;
+
+    [ObservableProperty]
+    private bool createNewDatabase;
+
+    [ObservableProperty]
+    private string newDatabaseName = string.Empty;
 
     [ObservableProperty]
     private bool isRunning;
+
+    [ObservableProperty]
+    private bool isLoadingDatabases;
+
+    [ObservableProperty]
+    private bool isRestoreCompleted;
+
+    [ObservableProperty]
+    private string completionMessage = string.Empty;
 
     [ObservableProperty]
     private string logOutput = string.Empty;
@@ -30,28 +59,125 @@ public partial class RestoreViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<string> activityHighlights = new();
 
+    public bool IsExistingDatabaseMode => !CreateNewDatabase;
+
+    public IAsyncRelayCommand BrowseBacpacPathCommand { get; }
+
+    public IAsyncRelayCommand LoadDatabasesCommand { get; }
+
     public IAsyncRelayCommand StartRestoreCommand { get; }
 
     public IRelayCommand CancelRestoreCommand { get; }
 
-    public RestoreViewModel(ISqlPackageService sqlPackageService)
+    public RestoreViewModel(ISqlPackageService sqlPackageService, IFilePickerService filePickerService)
     {
         _sqlPackageService = sqlPackageService;
+        _filePickerService = filePickerService;
+
+        BrowseBacpacPathCommand = new AsyncRelayCommand(BrowseBacpacPathAsync, CanBrowseOrLoad);
+        LoadDatabasesCommand = new AsyncRelayCommand(LoadDatabasesAsync, CanBrowseOrLoad);
         StartRestoreCommand = new AsyncRelayCommand(StartRestoreAsync, CanStartRestore);
         CancelRestoreCommand = new RelayCommand(CancelRestore, () => IsRunning);
     }
 
+    partial void OnCreateNewDatabaseChanged(bool value)
+    {
+        OnPropertyChanged(nameof(IsExistingDatabaseMode));
+    }
+
     partial void OnIsRunningChanged(bool value)
     {
+        BrowseBacpacPathCommand.NotifyCanExecuteChanged();
+        LoadDatabasesCommand.NotifyCanExecuteChanged();
         StartRestoreCommand.NotifyCanExecuteChanged();
         CancelRestoreCommand.NotifyCanExecuteChanged();
     }
 
-    private bool CanStartRestore() => !IsRunning;
+    partial void OnIsLoadingDatabasesChanged(bool value)
+    {
+        BrowseBacpacPathCommand.NotifyCanExecuteChanged();
+        LoadDatabasesCommand.NotifyCanExecuteChanged();
+        StartRestoreCommand.NotifyCanExecuteChanged();
+    }
+
+    private bool CanBrowseOrLoad() => !IsRunning && !IsLoadingDatabases;
+
+    private bool CanStartRestore() => !IsRunning && !IsLoadingDatabases;
+
+    private async Task BrowseBacpacPathAsync()
+    {
+        try
+        {
+            var filePath = await _filePickerService.PickBacpacFileAsync(CancellationToken.None);
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                return;
+            }
+
+            BacpacPath = filePath;
+            AppendHighlight("Bacpac file selected.");
+        }
+        catch (OperationCanceledException)
+        {
+            AppendHighlight("File selection canceled.");
+        }
+        catch (Exception ex)
+        {
+            AppendHighlight($"Could not choose bacpac file: {ex.Message}");
+        }
+    }
+
+    private async Task LoadDatabasesAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Server))
+        {
+            AppendHighlight("Server is required.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(Username))
+        {
+            AppendHighlight("Username is required.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(Password))
+        {
+            AppendHighlight("Password is required.");
+            return;
+        }
+
+        IsLoadingDatabases = true;
+
+        try
+        {
+            AppendHighlight("Connecting to server and loading databases...");
+            var dbs = await _sqlPackageService.GetUserDatabasesAsync(Server, Username, Password, CancellationToken.None);
+
+            Databases.Clear();
+            foreach (var db in dbs)
+            {
+                Databases.Add(db);
+            }
+
+            SelectedDatabase = Databases.FirstOrDefault();
+            AppendHighlight($"Found {Databases.Count} available database(s).");
+        }
+        catch (Exception ex)
+        {
+            AppendHighlight($"Failed to load databases: {ex.Message}");
+        }
+        finally
+        {
+            IsLoadingDatabases = false;
+        }
+    }
 
     private async Task StartRestoreAsync()
     {
         ClearHighlights();
+        IsRestoreCompleted = false;
+        CompletionMessage = string.Empty;
 
         if (string.IsNullOrWhiteSpace(BacpacPath))
         {
@@ -59,29 +185,56 @@ public partial class RestoreViewModel : ObservableObject
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(ConnectionString))
+        if (string.IsNullOrWhiteSpace(Server))
         {
-            AppendHighlight("Target connection string is required.");
+            AppendHighlight("Server is required.");
             return;
         }
+
+        if (string.IsNullOrWhiteSpace(Username))
+        {
+            AppendHighlight("Username is required.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(Password))
+        {
+            AppendHighlight("Password is required.");
+            return;
+        }
+
+        var targetDatabase = CreateNewDatabase ? NewDatabaseName : SelectedDatabase;
+        if (string.IsNullOrWhiteSpace(targetDatabase))
+        {
+            AppendHighlight(CreateNewDatabase
+                ? "New database name is required."
+                : "Select an existing database or choose new database mode.");
+            return;
+        }
+
+        var connectionString = SqlPackageService.BuildSqlAuthConnectionString(Server, Username, Password, targetDatabase);
 
         _cancellationTokenSource = new CancellationTokenSource();
         IsRunning = true;
 
         try
         {
-            AppendHighlight("Restore started.");
+            AppendHighlight($"Restore started for '{targetDatabase}'.");
             var progress = new Progress<string>(AppendHighlight);
-            await _sqlPackageService.ImportAsync(BacpacPath, ConnectionString, progress, _cancellationTokenSource.Token);
+            await _sqlPackageService.ImportAsync(BacpacPath, connectionString, progress, _cancellationTokenSource.Token);
             AppendHighlight("Restore completed successfully.");
+            CompletionMessage = $"Database ready: {targetDatabase}";
+            IsRestoreCompleted = true;
         }
         catch (OperationCanceledException)
         {
             AppendHighlight("Restore canceled.");
+            IsRestoreCompleted = false;
         }
         catch (Exception ex)
         {
             AppendHighlight($"Restore failed: {ex.Message}");
+            IsRestoreCompleted = false;
         }
         finally
         {

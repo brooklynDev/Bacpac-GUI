@@ -28,6 +28,7 @@ class Program
 
         serviceCollection.AddSingleton<ISqlPackageService, SqlPackageService>();
         serviceCollection.AddSingleton<IFolderPickerService, AvaloniaFolderPickerService>();
+        serviceCollection.AddSingleton<IFilePickerService, AvaloniaFilePickerService>();
 
         serviceCollection.AddTransient<BackupViewModel>();
         serviceCollection.AddTransient<RestoreViewModel>();
