@@ -33,6 +33,8 @@
         <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#FFF7FBFF" />
         <SolidColorBrush x:Key="TextControlForegroundDisabled" Color="#99C8D5F2" />
         <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#FF9AB0D7" />
+        <SolidColorBrush x:Key="TextControlPlaceholderForegroundPointerOver" Color="#FFB6C8EA" />
+        <SolidColorBrush x:Key="TextControlPlaceholderForegroundFocused" Color="#FFBFD0EC" />
         <SolidColorBrush x:Key="TextControlBorderBrush" Color="#FF334466" />
         <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#FF486289" />
         <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="#FF5E8FB0" />
@@ -53,6 +55,7 @@
         <Style Selector="TextBox:pointerover">
             <Setter Property="Background" Value="#8E14203A" />
             <Setter Property="BorderBrush" Value="#FF486289" />
+            <Setter Property="Foreground" Value="#FFF6FAFF" />
         </Style>
         <Style Selector="TextBox:focus">
             <Setter Property="Background" Value="#92213352" />
@@ -60,6 +63,15 @@
             <Setter Property="Foreground" Value="#FFF7FBFF" />
             <Setter Property="CaretBrush" Value="#FFF7FBFF" />
             <Setter Property="SelectionBrush" Value="#AA2F5D9B" />
+        </Style>
+        <Style Selector="TextBox /template/ ContentPresenter#PART_WatermarkPresenter">
+            <Setter Property="TextBlock.Foreground" Value="#FF9AB0D7" />
+        </Style>
+        <Style Selector="TextBox:pointerover /template/ ContentPresenter#PART_WatermarkPresenter">
+            <Setter Property="TextBlock.Foreground" Value="#FFB6C8EA" />
+        </Style>
+        <Style Selector="TextBox:focus /template/ ContentPresenter#PART_WatermarkPresenter">
+            <Setter Property="TextBlock.Foreground" Value="#FFBFD0EC" />
         </Style>
         <Style Selector="ComboBox">
             <Setter Property="Background" Value="#8810182A" />
@@ -108,10 +120,43 @@
             <Setter Property="Foreground" Value="#FFF5F8FF" />
             <Setter Property="BorderThickness" Value="1" />
         </Style>
+        <Style Selector="Button AccessText">
+            <Setter Property="Foreground" Value="#FFF5F8FF" />
+        </Style>
+        <Style Selector="Button:pointerover">
+            <Setter Property="Foreground" Value="#FFFFFFFF" />
+            <Setter Property="BorderBrush" Value="#FF78AEDD" />
+        </Style>
+        <Style Selector="Button:pointerover AccessText">
+            <Setter Property="Foreground" Value="#FFFFFFFF" />
+        </Style>
         <Style Selector="Button:disabled">
             <Setter Property="Foreground" Value="#99D7E4FF" />
-            <Setter Property="Background" Value="#55223654" />
-            <Setter Property="BorderBrush" Value="#66445E8B" />
+            <Setter Property="Background" Value="#8F3B5684" />
+            <Setter Property="BorderBrush" Value="#A67293C8" />
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="Button:disabled:pointerover">
+            <Setter Property="Foreground" Value="#99D7E4FF" />
+            <Setter Property="Background" Value="#8F3B5684" />
+            <Setter Property="BorderBrush" Value="#A67293C8" />
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="Button:disabled AccessText">
+            <Setter Property="Foreground" Value="#FFE6F0FF" />
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="Button:disabled:pointerover AccessText">
+            <Setter Property="Foreground" Value="#FFE6F0FF" />
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="Button:disabled /template/ ContentPresenter">
+            <Setter Property="TextElement.Foreground" Value="#FFE6F0FF" />
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="Button:disabled:pointerover /template/ ContentPresenter">
+            <Setter Property="TextElement.Foreground" Value="#FFE6F0FF" />
+            <Setter Property="Opacity" Value="1" />
         </Style>
         <Style Selector="Button.primary">
             <Setter Property="Background" Value="#FF2FA68C" />
@@ -119,6 +164,20 @@
         </Style>
         <Style Selector="Button.primary:pointerover">
             <Setter Property="Background" Value="#FF3AB89B" />
+            <Setter Property="Foreground" Value="#FFF7FFFC" />
+            <Setter Property="BorderBrush" Value="#FF58E2C0" />
+        </Style>
+        <Style Selector="Button.primary:disabled">
+            <Setter Property="Foreground" Value="#FFF0FFFB" />
+            <Setter Property="Background" Value="#8D4C8C81" />
+            <Setter Property="BorderBrush" Value="#B175C7BA" />
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="Button.primary:disabled:pointerover">
+            <Setter Property="Foreground" Value="#FFF0FFFB" />
+            <Setter Property="Background" Value="#8D4C8C81" />
+            <Setter Property="BorderBrush" Value="#B175C7BA" />
+            <Setter Property="Opacity" Value="1" />
         </Style>
         <Style Selector="Button.secondary">
             <Setter Property="Background" Value="#FF223459" />
@@ -126,6 +185,20 @@
         </Style>
         <Style Selector="Button.secondary:pointerover">
             <Setter Property="Background" Value="#FF29446F" />
+            <Setter Property="Foreground" Value="#FFF2F7FF" />
+            <Setter Property="BorderBrush" Value="#FF5885C2" />
+        </Style>
+        <Style Selector="Button.secondary:disabled">
+            <Setter Property="Foreground" Value="#FFD8E5FF" />
+            <Setter Property="Background" Value="#80506A92" />
+            <Setter Property="BorderBrush" Value="#AA6B8EBF" />
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="Button.secondary:disabled:pointerover">
+            <Setter Property="Foreground" Value="#FFD8E5FF" />
+            <Setter Property="Background" Value="#80506A92" />
+            <Setter Property="BorderBrush" Value="#AA6B8EBF" />
+            <Setter Property="Opacity" Value="1" />
         </Style>
         <Style Selector="Button.neutral">
             <Setter Property="Background" Value="#FF2B213B" />
@@ -133,6 +206,20 @@
         </Style>
         <Style Selector="Button.neutral:pointerover">
             <Setter Property="Background" Value="#FF3A2951" />
+            <Setter Property="Foreground" Value="#FFF6EEFF" />
+            <Setter Property="BorderBrush" Value="#FF8362B0" />
+        </Style>
+        <Style Selector="Button.neutral:disabled">
+            <Setter Property="Foreground" Value="#FFE5D9F7" />
+            <Setter Property="Background" Value="#80605178" />
+            <Setter Property="BorderBrush" Value="#AA8771A6" />
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="Button.neutral:disabled:pointerover">
+            <Setter Property="Foreground" Value="#FFE5D9F7" />
+            <Setter Property="Background" Value="#80605178" />
+            <Setter Property="BorderBrush" Value="#AA8771A6" />
+            <Setter Property="Opacity" Value="1" />
         </Style>
         <Style Selector="Button.icon">
             <Setter Property="Width" Value="42" />
@@ -140,6 +227,12 @@
             <Setter Property="Padding" Value="0" />
             <Setter Property="Background" Value="#FF223459" />
             <Setter Property="BorderBrush" Value="#FF3A5788" />
+            <Setter Property="Foreground" Value="#FFEAF3FF" />
+        </Style>
+        <Style Selector="Button.icon:pointerover">
+            <Setter Property="Background" Value="#FF305181" />
+            <Setter Property="BorderBrush" Value="#FF72A3DF" />
+            <Setter Property="Foreground" Value="#FFFFFFFF" />
         </Style>
         <Style Selector="CheckBox">
             <Setter Property="Foreground" Value="#FFEAF1FF" />
