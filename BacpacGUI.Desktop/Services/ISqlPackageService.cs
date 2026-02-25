@@ -7,6 +7,8 @@ namespace BacpacGUI.Desktop.Services;
 
 public interface ISqlPackageService
 {
+    Task TestConnectionAsync(string connectionString, CancellationToken token);
+
     Task ExportAsync(string connectionString, string outputPath, IProgress<string> logProgress, CancellationToken token);
 
     Task ImportAsync(string bacpacPath, string connectionString, IProgress<string> logProgress, CancellationToken token);

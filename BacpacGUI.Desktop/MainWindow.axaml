@@ -517,6 +517,7 @@
                             </Grid>
 
                             <StackPanel Grid.Row="7" Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                                <Button Content="Test Connection" MinWidth="140" Classes="secondary" Command="{Binding Backup.TestConnectionCommand}" />
                                 <Button Content="Start Backup" MinWidth="130" Classes="primary startAction" Command="{Binding Backup.StartBackupCommand}" />
                                 <Button Content="Cancel" MinWidth="90" Classes="neutral" Command="{Binding Backup.CancelBackupCommand}" IsVisible="{Binding Backup.IsRunning}" />
                                 <Border Classes="statusChip" VerticalAlignment="Center">
@@ -636,6 +637,7 @@
                             <TextBox Grid.Row="7" Grid.Column="1" IsVisible="{Binding Restore.CreateNewDatabase}" MinHeight="36" Text="{Binding Restore.NewDatabaseName, Mode=TwoWay}" Watermark="my_restored_database" />
 
                             <StackPanel Grid.Row="8" Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                                <Button Content="Test Connection" MinWidth="140" Classes="secondary" Command="{Binding Restore.TestConnectionCommand}" />
                                 <Button Content="Start Restore" MinWidth="130" Classes="primary startAction" Command="{Binding Restore.StartRestoreCommand}" />
                                 <Button Content="Cancel" MinWidth="90" Classes="neutral" Command="{Binding Restore.CancelRestoreCommand}" IsVisible="{Binding Restore.IsRunning}" />
                                 <Border Classes="statusChip" VerticalAlignment="Center">

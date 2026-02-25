@@ -53,6 +53,9 @@ public partial class RestoreViewModel : ObservableObject
     private bool isLoadingDatabases;
 
     [ObservableProperty]
+    private bool isTestingConnection;
+
+    [ObservableProperty]
     private bool isRestoreCompleted;
 
     [ObservableProperty]
@@ -105,6 +108,8 @@ public partial class RestoreViewModel : ObservableObject
 
     public IAsyncRelayCommand LoadDatabasesCommand { get; }
 
+    public IAsyncRelayCommand TestConnectionCommand { get; }
+
     public IAsyncRelayCommand StartRestoreCommand { get; }
 
     public IRelayCommand CancelRestoreCommand { get; }
@@ -127,6 +132,7 @@ public partial class RestoreViewModel : ObservableObject
         BrowseBacpacPathCommand = new AsyncRelayCommand(BrowseBacpacPathAsync, CanBrowseOrLoad);
         PreviewBacpacCommand = new AsyncRelayCommand(PreviewBacpacAsync, CanPreviewBacpac);
         LoadDatabasesCommand = new AsyncRelayCommand(LoadDatabasesAsync, CanBrowseOrLoad);
+        TestConnectionCommand = new AsyncRelayCommand(TestConnectionAsync, CanTestConnection);
         StartRestoreCommand = new AsyncRelayCommand(StartRestoreAsync, CanStartRestore);
         CancelRestoreCommand = new RelayCommand(CancelRestore, () => IsRunning);
         CopyLogsCommand = new AsyncRelayCommand(CopyLogsAsync, CanCopyLogs);
@@ -154,6 +160,7 @@ public partial class RestoreViewModel : ObservableObject
     {
         BrowseBacpacPathCommand.NotifyCanExecuteChanged();
         LoadDatabasesCommand.NotifyCanExecuteChanged();
+        TestConnectionCommand.NotifyCanExecuteChanged();
         StartRestoreCommand.NotifyCanExecuteChanged();
         CancelRestoreCommand.NotifyCanExecuteChanged();
         OpenBacpacFolderCommand.NotifyCanExecuteChanged();
@@ -171,6 +178,16 @@ public partial class RestoreViewModel : ObservableObject
         BrowseBacpacPathCommand.NotifyCanExecuteChanged();
         PreviewBacpacCommand.NotifyCanExecuteChanged();
         LoadDatabasesCommand.NotifyCanExecuteChanged();
+        TestConnectionCommand.NotifyCanExecuteChanged();
+        StartRestoreCommand.NotifyCanExecuteChanged();
+    }
+
+    partial void OnIsTestingConnectionChanged(bool value)
+    {
+        BrowseBacpacPathCommand.NotifyCanExecuteChanged();
+        PreviewBacpacCommand.NotifyCanExecuteChanged();
+        LoadDatabasesCommand.NotifyCanExecuteChanged();
+        TestConnectionCommand.NotifyCanExecuteChanged();
         StartRestoreCommand.NotifyCanExecuteChanged();
     }
 
@@ -194,6 +211,21 @@ public partial class RestoreViewModel : ObservableObject
         OnPropertyChanged(nameof(ShowPreviewPanel));
     }
 
+    partial void OnServerChanged(string value)
+    {
+        TestConnectionCommand.NotifyCanExecuteChanged();
+    }
+
+    partial void OnUsernameChanged(string value)
+    {
+        TestConnectionCommand.NotifyCanExecuteChanged();
+    }
+
+    partial void OnPasswordChanged(string value)
+    {
+        TestConnectionCommand.NotifyCanExecuteChanged();
+    }
+
     partial void OnHasPreviewChanged(bool value)
     {
         OnPropertyChanged(nameof(ShowPreviewPanel));
@@ -214,11 +246,21 @@ public partial class RestoreViewModel : ObservableObject
         OnPropertyChanged(nameof(PreviewObjectCount));
     }
 
-    private bool CanBrowseOrLoad() => !IsRunning && !IsLoadingDatabases;
+    private bool CanBrowseOrLoad() => !IsRunning && !IsLoadingDatabases && !IsTestingConnection;
 
     private bool CanPreviewBacpac() => !IsRunning && !IsLoadingDatabases && !IsPreviewLoading && !string.IsNullOrWhiteSpace(BacpacPath);
 
-    private bool CanStartRestore() => !IsRunning && !IsLoadingDatabases;
+    private bool CanTestConnection()
+    {
+        return !IsRunning &&
+               !IsLoadingDatabases &&
+               !IsTestingConnection &&
+               !string.IsNullOrWhiteSpace(Server) &&
+               !string.IsNullOrWhiteSpace(Username) &&
+               !string.IsNullOrWhiteSpace(Password);
+    }
+
+    private bool CanStartRestore() => !IsRunning && !IsLoadingDatabases && !IsTestingConnection;
 
     private bool CanCopyLogs() => !string.IsNullOrWhiteSpace(LogOutput);
 
@@ -396,6 +438,52 @@ public partial class RestoreViewModel : ObservableObject
                 IsRestoreCompleted = true;
                 StatusMessage = "Restore complete";
             }
+        }
+    }
+
+    private async Task TestConnectionAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Server))
+        {
+            AppendHighlight("Server is required.");
+            StatusMessage = "Server required";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(Username))
+        {
+            AppendHighlight("Username is required.");
+            StatusMessage = "Username required";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(Password))
+        {
+            AppendHighlight("Password is required.");
+            StatusMessage = "Password required";
+            return;
+        }
+
+        var connectionString = SqlPackageService.BuildSqlAuthConnectionString(Server, Username, Password, "master");
+
+        IsTestingConnection = true;
+        StatusMessage = "Testing connection...";
+        AppendHighlight("Testing SQL connection...");
+
+        try
+        {
+            await _sqlPackageService.TestConnectionAsync(connectionString, CancellationToken.None);
+            AppendHighlight("Connection successful.");
+            StatusMessage = "Connection successful";
+        }
+        catch (Exception ex)
+        {
+            AppendHighlight($"Connection failed: {ex.Message}");
+            StatusMessage = "Connection failed";
+        }
+        finally
+        {
+            IsTestingConnection = false;
         }
     }
 

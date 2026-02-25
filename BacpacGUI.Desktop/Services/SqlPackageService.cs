@@ -14,6 +14,17 @@ namespace BacpacGUI.Desktop.Services;
 
 public sealed class SqlPackageService : ISqlPackageService
 {
+    public async Task TestConnectionAsync(string connectionString, CancellationToken token)
+    {
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException("Connection string is required.");
+        }
+
+        await using var connection = new SqlConnection(connectionString.Trim());
+        await connection.OpenAsync(token).ConfigureAwait(false);
+    }
+
     public async Task ExportAsync(string connectionString, string outputPath, IProgress<string> logProgress, CancellationToken token)
     {
         var sourceDatabase = GetDatabaseName(connectionString);

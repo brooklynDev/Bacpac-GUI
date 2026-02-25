@@ -48,6 +48,9 @@ public partial class BackupViewModel : ObservableObject
     private bool isLoadingDatabases;
 
     [ObservableProperty]
+    private bool isTestingConnection;
+
+    [ObservableProperty]
     private bool isBackupCompleted;
 
     [ObservableProperty]
@@ -78,6 +81,8 @@ public partial class BackupViewModel : ObservableObject
 
     public IAsyncRelayCommand BrowseOutputPathCommand { get; }
 
+    public IAsyncRelayCommand TestConnectionCommand { get; }
+
     public IAsyncRelayCommand StartBackupCommand { get; }
 
     public IRelayCommand CancelBackupCommand { get; }
@@ -99,6 +104,7 @@ public partial class BackupViewModel : ObservableObject
 
         LoadDatabasesCommand = new AsyncRelayCommand(LoadDatabasesAsync, CanLoadDatabases);
         BrowseOutputPathCommand = new AsyncRelayCommand(BrowseOutputPathAsync, CanBrowseOutputPath);
+        TestConnectionCommand = new AsyncRelayCommand(TestConnectionAsync, CanTestConnection);
         StartBackupCommand = new AsyncRelayCommand(StartBackupAsync, CanStartBackup);
         CancelBackupCommand = new RelayCommand(CancelBackup, () => IsRunning);
         CopyLogsCommand = new AsyncRelayCommand(CopyLogsAsync, CanCopyLogs);
@@ -110,6 +116,7 @@ public partial class BackupViewModel : ObservableObject
     {
         LoadDatabasesCommand.NotifyCanExecuteChanged();
         BrowseOutputPathCommand.NotifyCanExecuteChanged();
+        TestConnectionCommand.NotifyCanExecuteChanged();
         StartBackupCommand.NotifyCanExecuteChanged();
         CancelBackupCommand.NotifyCanExecuteChanged();
         OpenOutputFolderCommand.NotifyCanExecuteChanged();
@@ -125,6 +132,15 @@ public partial class BackupViewModel : ObservableObject
     {
         LoadDatabasesCommand.NotifyCanExecuteChanged();
         BrowseOutputPathCommand.NotifyCanExecuteChanged();
+        TestConnectionCommand.NotifyCanExecuteChanged();
+        StartBackupCommand.NotifyCanExecuteChanged();
+    }
+
+    partial void OnIsTestingConnectionChanged(bool value)
+    {
+        LoadDatabasesCommand.NotifyCanExecuteChanged();
+        BrowseOutputPathCommand.NotifyCanExecuteChanged();
+        TestConnectionCommand.NotifyCanExecuteChanged();
         StartBackupCommand.NotifyCanExecuteChanged();
     }
 
@@ -144,13 +160,51 @@ public partial class BackupViewModel : ObservableObject
         OnPropertyChanged(nameof(IsManualMode));
         OnPropertyChanged(nameof(IsConnectionStringMode));
         LoadDatabasesCommand.NotifyCanExecuteChanged();
+        TestConnectionCommand.NotifyCanExecuteChanged();
     }
 
-    private bool CanLoadDatabases() => !UseConnectionStringMode && !IsRunning && !IsLoadingDatabases;
+    partial void OnServerChanged(string value)
+    {
+        TestConnectionCommand.NotifyCanExecuteChanged();
+    }
 
-    private bool CanBrowseOutputPath() => !IsRunning && !IsLoadingDatabases;
+    partial void OnUsernameChanged(string value)
+    {
+        TestConnectionCommand.NotifyCanExecuteChanged();
+    }
 
-    private bool CanStartBackup() => !IsRunning && !IsLoadingDatabases;
+    partial void OnPasswordChanged(string value)
+    {
+        TestConnectionCommand.NotifyCanExecuteChanged();
+    }
+
+    partial void OnConnectionStringChanged(string value)
+    {
+        TestConnectionCommand.NotifyCanExecuteChanged();
+    }
+
+    private bool CanLoadDatabases() => !UseConnectionStringMode && !IsRunning && !IsLoadingDatabases && !IsTestingConnection;
+
+    private bool CanBrowseOutputPath() => !IsRunning && !IsLoadingDatabases && !IsTestingConnection;
+
+    private bool CanTestConnection()
+    {
+        if (IsRunning || IsLoadingDatabases || IsTestingConnection)
+        {
+            return false;
+        }
+
+        if (UseConnectionStringMode)
+        {
+            return !string.IsNullOrWhiteSpace(ConnectionString);
+        }
+
+        return !string.IsNullOrWhiteSpace(Server) &&
+               !string.IsNullOrWhiteSpace(Username) &&
+               !string.IsNullOrWhiteSpace(Password);
+    }
+
+    private bool CanStartBackup() => !IsRunning && !IsLoadingDatabases && !IsTestingConnection;
 
     private bool CanCopyLogs() => !string.IsNullOrWhiteSpace(LogOutput);
 
@@ -376,6 +430,67 @@ public partial class BackupViewModel : ObservableObject
                 IsBackupCompleted = true;
                 StatusMessage = "Backup complete";
             }
+        }
+    }
+
+    private async Task TestConnectionAsync()
+    {
+        string connectionString;
+        if (UseConnectionStringMode)
+        {
+            if (string.IsNullOrWhiteSpace(ConnectionString))
+            {
+                AppendHighlight("Connection string is required.");
+                StatusMessage = "Connection string required";
+                return;
+            }
+
+            connectionString = ConnectionString.Trim();
+        }
+        else
+        {
+            if (string.IsNullOrWhiteSpace(Server))
+            {
+                AppendHighlight("Server is required.");
+                StatusMessage = "Server required";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(Username))
+            {
+                AppendHighlight("Username is required.");
+                StatusMessage = "Username required";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(Password))
+            {
+                AppendHighlight("Password is required.");
+                StatusMessage = "Password required";
+                return;
+            }
+
+            connectionString = SqlPackageService.BuildSqlAuthConnectionString(Server, Username, Password, "master");
+        }
+
+        IsTestingConnection = true;
+        StatusMessage = "Testing connection...";
+        AppendHighlight("Testing SQL connection...");
+
+        try
+        {
+            await _sqlPackageService.TestConnectionAsync(connectionString, CancellationToken.None);
+            AppendHighlight("Connection successful.");
+            StatusMessage = "Connection successful";
+        }
+        catch (Exception ex)
+        {
+            AppendHighlight($"Connection failed: {ex.Message}");
+            StatusMessage = "Connection failed";
+        }
+        finally
+        {
+            IsTestingConnection = false;
         }
     }
 
