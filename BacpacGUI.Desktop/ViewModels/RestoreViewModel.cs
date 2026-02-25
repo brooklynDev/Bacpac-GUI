@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using BacpacGUI.Desktop.Services;
@@ -15,6 +16,9 @@ public partial class RestoreViewModel : ObservableObject
     private const int MaxHighlights = 300;
     private const int CompletionQuietPeriodMs = 800;
     private const int CompletionQuietTimeoutMs = 15000;
+    private static readonly Regex OverallProgressRegex = new(
+        @"(?:SQL73\d+:\s*)?Processing\s+(Export|Import)\.\s*(?<percent>100(?:\.0+)?|(?:\d{1,2})(?:\.\d+)?)%\s*done\.",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private readonly ISqlPackageService _sqlPackageService;
     private readonly IFilePickerService _filePickerService;
@@ -63,6 +67,15 @@ public partial class RestoreViewModel : ObservableObject
 
     [ObservableProperty]
     private string statusMessage = "Ready";
+
+    [ObservableProperty]
+    private double operationProgressPercent;
+
+    [ObservableProperty]
+    private bool isOperationProgressIndeterminate = true;
+
+    [ObservableProperty]
+    private string operationProgressStep = "Waiting for progress...";
 
     [ObservableProperty]
     private string logOutput = string.Empty;
@@ -392,6 +405,7 @@ public partial class RestoreViewModel : ObservableObject
         var connectionString = SqlPackageService.BuildSqlAuthConnectionString(Server, Username, Password, targetDatabase);
 
         _cancellationTokenSource = new CancellationTokenSource();
+        ResetOperationProgress("Preparing restore...");
         IsRunning = true;
         BufferedLogProgress? progress = null;
         var restoreSucceeded = false;
@@ -409,6 +423,8 @@ public partial class RestoreViewModel : ObservableObject
         catch (OperationCanceledException)
         {
             AppendHighlight("Restore canceled.");
+            IsOperationProgressIndeterminate = false;
+            OperationProgressStep = "Canceled";
             IsRestoreCompleted = false;
             StatusMessage = "Restore canceled";
             restoreSucceeded = false;
@@ -416,6 +432,8 @@ public partial class RestoreViewModel : ObservableObject
         catch (Exception ex)
         {
             AppendHighlight($"Restore failed: {ex.Message}");
+            IsOperationProgressIndeterminate = false;
+            OperationProgressStep = "Failed";
             IsRestoreCompleted = false;
             StatusMessage = "Restore failed";
             restoreSucceeded = false;
@@ -433,6 +451,9 @@ public partial class RestoreViewModel : ObservableObject
 
             if (restoreSucceeded)
             {
+                OperationProgressPercent = 100;
+                IsOperationProgressIndeterminate = false;
+                OperationProgressStep = "Completed";
                 AppendHighlight("Restore completed successfully.");
                 CompletionMessage = $"Database ready: {targetDatabase}";
                 IsRestoreCompleted = true;
@@ -539,6 +560,8 @@ public partial class RestoreViewModel : ObservableObject
             return;
         }
 
+        TryApplyOverallProgressFromMessage(normalized);
+
         var entry = $"{DateTime.Now:HH:mm:ss}  {normalized}";
         _lastHighlightTimestampUtc = DateTime.UtcNow;
 
@@ -554,6 +577,42 @@ public partial class RestoreViewModel : ObservableObject
     private static string NormalizeMessage(string message)
     {
         return message.Trim();
+    }
+
+    private void ResetOperationProgress(string initialStep)
+    {
+        OperationProgressPercent = 0;
+        IsOperationProgressIndeterminate = true;
+        OperationProgressStep = initialStep;
+    }
+
+    private void TryApplyOverallProgressFromMessage(string message)
+    {
+        if (!IsRunning)
+        {
+            return;
+        }
+
+        var match = OverallProgressRegex.Match(message);
+        if (!match.Success)
+        {
+            return;
+        }
+
+        if (!double.TryParse(match.Groups["percent"].Value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var parsed))
+        {
+            return;
+        }
+
+        var candidate = Math.Clamp(parsed, 0, 99.5);
+        if (candidate > OperationProgressPercent)
+        {
+            OperationProgressPercent = candidate;
+        }
+
+        IsOperationProgressIndeterminate = false;
+        var operationName = match.Groups[1].Value;
+        OperationProgressStep = $"Processing {operationName}...";
     }
 
     private static string GetDatabaseNameFromBacpacPath(string bacpacPath)

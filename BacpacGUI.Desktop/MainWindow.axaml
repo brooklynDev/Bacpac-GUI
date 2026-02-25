@@ -525,7 +525,24 @@
                                 </Border>
                             </StackPanel>
 
-                            <ProgressBar Grid.Row="8" Grid.Column="1" Height="8" IsIndeterminate="True" IsVisible="{Binding Backup.IsRunning}" />
+                            <StackPanel Grid.Row="8" Grid.Column="1" Spacing="6" IsVisible="{Binding Backup.IsRunning}">
+                                <ProgressBar Height="8"
+                                             Minimum="0"
+                                             Maximum="100"
+                                             Value="{Binding Backup.OperationProgressPercent}"
+                                             IsIndeterminate="{Binding Backup.IsOperationProgressIndeterminate}" />
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Text="{Binding Backup.OperationProgressStep}"
+                                               Foreground="#FF9FB8E0"
+                                               FontSize="11"
+                                               TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding Backup.OperationProgressPercent, StringFormat={}{0:0.0}%}"
+                                               Foreground="#FFBDD4F7"
+                                               FontSize="11"
+                                               FontWeight="SemiBold" />
+                                </Grid>
+                            </StackPanel>
 
                             <Border Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2" IsVisible="{Binding Backup.ShowBackupCompletedBanner}" Background="#2C2DBA7D" BorderBrush="#FF48E0AF" BorderThickness="1" CornerRadius="12" Padding="14,12">
                                 <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
@@ -645,7 +662,24 @@
                                 </Border>
                             </StackPanel>
 
-                            <ProgressBar Grid.Row="9" Grid.Column="1" Height="8" IsIndeterminate="True" IsVisible="{Binding Restore.IsRunning}" />
+                            <StackPanel Grid.Row="9" Grid.Column="1" Spacing="6" IsVisible="{Binding Restore.IsRunning}">
+                                <ProgressBar Height="8"
+                                             Minimum="0"
+                                             Maximum="100"
+                                             Value="{Binding Restore.OperationProgressPercent}"
+                                             IsIndeterminate="{Binding Restore.IsOperationProgressIndeterminate}" />
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Text="{Binding Restore.OperationProgressStep}"
+                                               Foreground="#FF9FB8E0"
+                                               FontSize="11"
+                                               TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding Restore.OperationProgressPercent, StringFormat={}{0:0.0}%}"
+                                               Foreground="#FFBDD4F7"
+                                               FontSize="11"
+                                               FontWeight="SemiBold" />
+                                </Grid>
+                            </StackPanel>
 
                             <Border Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="2" IsVisible="{Binding Restore.ShowRestoreCompletedBanner}" Background="#2C2DBA7D" BorderBrush="#FF48E0AF" BorderThickness="1" CornerRadius="12" Padding="14,12">
                                 <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
