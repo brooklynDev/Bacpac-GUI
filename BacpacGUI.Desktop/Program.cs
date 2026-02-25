@@ -30,6 +30,7 @@ class Program
         serviceCollection.AddSingleton<IFolderPickerService, AvaloniaFolderPickerService>();
         serviceCollection.AddSingleton<IFilePickerService, AvaloniaFilePickerService>();
         serviceCollection.AddSingleton<IUserInteractionService, AvaloniaUserInteractionService>();
+        serviceCollection.AddSingleton<IRecentHistoryService, RecentHistoryService>();
 
         serviceCollection.AddTransient<BackupViewModel>();
         serviceCollection.AddTransient<RestoreViewModel>();

@@ -80,15 +80,85 @@
             <Setter Property="Foreground" Value="#FFF4F7FF" />
             <Setter Property="PlaceholderForeground" Value="#FF9AB0D7" />
             <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="10,6" />
         </Style>
         <Style Selector="ComboBox:pointerover">
-            <Setter Property="Background" Value="#8E14203A" />
-            <Setter Property="BorderBrush" Value="#FF486289" />
+            <Setter Property="Background" Value="#8A162844" />
+            <Setter Property="BorderBrush" Value="#FF5573A0" />
         </Style>
         <Style Selector="ComboBox:focus">
             <Setter Property="Background" Value="#92213352" />
             <Setter Property="BorderBrush" Value="#FF67A6C7" />
             <Setter Property="Foreground" Value="#FFF7FBFF" />
+        </Style>
+        <Style Selector="ComboBox:dropdownopen">
+            <Setter Property="Background" Value="#9622385A" />
+            <Setter Property="BorderBrush" Value="#FF73AEE0" />
+        </Style>
+        <Style Selector="ComboBox /template/ Border#border">
+            <Setter Property="Background" Value="#8810182A" />
+            <Setter Property="BorderBrush" Value="#FF334466" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+        </Style>
+        <Style Selector="ComboBox:pointerover /template/ Border#border">
+            <Setter Property="Background" Value="#8A162844" />
+            <Setter Property="BorderBrush" Value="#FF5573A0" />
+        </Style>
+        <Style Selector="ComboBox:focus /template/ Border#border">
+            <Setter Property="Background" Value="#92213352" />
+            <Setter Property="BorderBrush" Value="#FF67A6C7" />
+        </Style>
+        <Style Selector="ComboBox:dropdownopen /template/ Border#border">
+            <Setter Property="Background" Value="#9622385A" />
+            <Setter Property="BorderBrush" Value="#FF73AEE0" />
+        </Style>
+        <Style Selector="ComboBox /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="TextElement.Foreground" Value="#FFF4F7FF" />
+        </Style>
+        <Style Selector="ComboBox:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="TextElement.Foreground" Value="#FFFFFFFF" />
+        </Style>
+        <Style Selector="ComboBox:editable /template/ TextBox#PART_EditableTextBox">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="#FFF4F7FF" />
+            <Setter Property="CaretBrush" Value="#FFF7FBFF" />
+            <Setter Property="SelectionBrush" Value="#AA2F5D9B" />
+            <Setter Property="Watermark" Value="" />
+        </Style>
+        <Style Selector="ComboBox:editable:pointerover /template/ TextBox#PART_EditableTextBox">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="#FFFFFFFF" />
+        </Style>
+        <Style Selector="ComboBox:editable /template/ TextBox#PART_EditableTextBox:pointerover">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="#FFFFFFFF" />
+        </Style>
+        <Style Selector="ComboBox:editable:focus /template/ TextBox#PART_EditableTextBox">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="#FFFFFFFF" />
+        </Style>
+        <Style Selector="ComboBox /template/ ToggleButton#PART_DropDownButton">
+            <Setter Property="Background" Value="#44233A62" />
+            <Setter Property="BorderBrush" Value="#66547CB3" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="8,0" />
+        </Style>
+        <Style Selector="ComboBox:pointerover /template/ ToggleButton#PART_DropDownButton">
+            <Setter Property="Background" Value="#55355A8C" />
+            <Setter Property="BorderBrush" Value="#887FB4F0" />
+        </Style>
+        <Style Selector="ComboBox:focus /template/ ToggleButton#PART_DropDownButton">
+            <Setter Property="Background" Value="#66446A9E" />
+            <Setter Property="BorderBrush" Value="#FF8BC7FF" />
         </Style>
         <Style Selector="TabControl">
             <Setter Property="Background" Value="Transparent" />
@@ -376,13 +446,57 @@
         <Style Selector="ComboBoxItem">
             <Setter Property="Foreground" Value="#FFF0F5FF" />
             <Setter Property="Background" Value="#FF121D34" />
+            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="Margin" Value="4,2" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
         <Style Selector="ComboBoxItem:pointerover">
-            <Setter Property="Background" Value="#FF203155" />
+            <Setter Property="Background" Value="#FF1B2B49" />
             <Setter Property="Foreground" Value="#FFFFFFFF" />
         </Style>
         <Style Selector="ComboBoxItem:selected">
-            <Setter Property="Background" Value="#FF2D4B7A" />
+            <Setter Property="Background" Value="#FF254068" />
+            <Setter Property="BorderBrush" Value="#FF4F7CB7" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#FFFFFFFF" />
+        </Style>
+        <Style Selector="ComboBoxItem:selected:pointerover">
+            <Setter Property="Background" Value="#FF2A4874" />
+            <Setter Property="BorderBrush" Value="#FF69A1E8" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#FFFFFFFF" />
+        </Style>
+        <Style Selector="ListBox">
+            <Setter Property="Background" Value="#FF0F182E" />
+            <Setter Property="BorderBrush" Value="#FF2A446D" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="4" />
+        </Style>
+        <Style Selector="ListBoxItem">
+            <Setter Property="Foreground" Value="#FFF0F5FF" />
+            <Setter Property="Background" Value="#FF121D34" />
+            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="Margin" Value="4,2" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="ListBoxItem:pointerover">
+            <Setter Property="Background" Value="#FF1B2B49" />
+            <Setter Property="BorderBrush" Value="#FF3D5F93" />
+            <Setter Property="Foreground" Value="#FFFFFFFF" />
+        </Style>
+        <Style Selector="ListBoxItem:selected">
+            <Setter Property="Background" Value="#FF254068" />
+            <Setter Property="BorderBrush" Value="#FF4F7CB7" />
+            <Setter Property="Foreground" Value="#FFFFFFFF" />
+        </Style>
+        <Style Selector="ListBoxItem:selected:pointerover">
+            <Setter Property="Background" Value="#FF2A4874" />
+            <Setter Property="BorderBrush" Value="#FF69A1E8" />
             <Setter Property="Foreground" Value="#FFFFFFFF" />
         </Style>
         <Style Selector="PopupRoot">
@@ -494,7 +608,14 @@
                                      IsVisible="{Binding Backup.IsConnectionStringMode}" />
 
                             <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="SQL Server" FontWeight="SemiBold" IsVisible="{Binding Backup.IsManualMode}" />
-                            <TextBox Grid.Row="2" Grid.Column="1" MinHeight="36" Text="{Binding Backup.Server, Mode=TwoWay}" Watermark="localhost,1433 or myserver.database.windows.net" IsVisible="{Binding Backup.IsManualMode}" />
+                            <ComboBox Grid.Row="2"
+                                      Grid.Column="1"
+                                      MinHeight="36"
+                                      IsEditable="True"
+                                      Text="{Binding Backup.Server, Mode=TwoWay}"
+                                      ItemsSource="{Binding Backup.RecentServers}"
+                                      PlaceholderText="localhost,1433 or myserver.database.windows.net"
+                                      IsVisible="{Binding Backup.IsManualMode}" />
 
                             <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Username" FontWeight="SemiBold" IsVisible="{Binding Backup.IsManualMode}" />
                             <TextBox Grid.Row="3" Grid.Column="1" MinHeight="36" Text="{Binding Backup.Username, Mode=TwoWay}" Watermark="sql_login" IsVisible="{Binding Backup.IsManualMode}" />
@@ -579,7 +700,12 @@
                               Margin="8">
                             <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Bacpac File" FontWeight="SemiBold" />
                             <Grid Grid.Row="0" Grid.Column="1" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
-                                <TextBox Grid.Column="0" MinHeight="36" Text="{Binding Restore.BacpacPath, Mode=TwoWay}" Watermark="/path/to/backup.bacpac" />
+                                <ComboBox Grid.Column="0"
+                                          MinHeight="36"
+                                          IsEditable="True"
+                                          Text="{Binding Restore.BacpacPath, Mode=TwoWay}"
+                                          ItemsSource="{Binding Restore.RecentBacpacFiles}"
+                                          PlaceholderText="/path/to/backup.bacpac" />
                                 <Button Grid.Column="1" Classes="icon" Command="{Binding Restore.BrowseBacpacPathCommand}" ToolTip.Tip="Choose bacpac file">
                                     <TextBlock Text="📄" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Button>
@@ -633,7 +759,13 @@
                             </Border>
 
                             <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="SQL Server" FontWeight="SemiBold" />
-                            <TextBox Grid.Row="2" Grid.Column="1" MinHeight="36" Text="{Binding Restore.Server, Mode=TwoWay}" Watermark="localhost,1433 or myserver.database.windows.net" />
+                            <ComboBox Grid.Row="2"
+                                      Grid.Column="1"
+                                      MinHeight="36"
+                                      IsEditable="True"
+                                      Text="{Binding Restore.Server, Mode=TwoWay}"
+                                      ItemsSource="{Binding Restore.RecentServers}"
+                                      PlaceholderText="localhost,1433 or myserver.database.windows.net" />
 
                             <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Username" FontWeight="SemiBold" />
                             <TextBox Grid.Row="3" Grid.Column="1" MinHeight="36" Text="{Binding Restore.Username, Mode=TwoWay}" Watermark="sql_login" />

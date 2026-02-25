@@ -23,6 +23,7 @@ public partial class RestoreViewModel : ObservableObject
     private readonly ISqlPackageService _sqlPackageService;
     private readonly IFilePickerService _filePickerService;
     private readonly IUserInteractionService _userInteractionService;
+    private readonly IRecentHistoryService _recentHistoryService;
     private CancellationTokenSource? _cancellationTokenSource;
     private DateTime _lastHighlightTimestampUtc = DateTime.UtcNow;
 
@@ -81,6 +82,12 @@ public partial class RestoreViewModel : ObservableObject
     private string logOutput = string.Empty;
 
     [ObservableProperty]
+    private ObservableCollection<string> recentServers = new();
+
+    [ObservableProperty]
+    private ObservableCollection<string> recentBacpacFiles = new();
+
+    [ObservableProperty]
     private ObservableCollection<string> activityHighlights = new();
 
     [ObservableProperty]
@@ -136,11 +143,13 @@ public partial class RestoreViewModel : ObservableObject
     public RestoreViewModel(
         ISqlPackageService sqlPackageService,
         IFilePickerService filePickerService,
-        IUserInteractionService userInteractionService)
+        IUserInteractionService userInteractionService,
+        IRecentHistoryService recentHistoryService)
     {
         _sqlPackageService = sqlPackageService;
         _filePickerService = filePickerService;
         _userInteractionService = userInteractionService;
+        _recentHistoryService = recentHistoryService;
 
         BrowseBacpacPathCommand = new AsyncRelayCommand(BrowseBacpacPathAsync, CanBrowseOrLoad);
         PreviewBacpacCommand = new AsyncRelayCommand(PreviewBacpacAsync, CanPreviewBacpac);
@@ -151,6 +160,16 @@ public partial class RestoreViewModel : ObservableObject
         CopyLogsCommand = new AsyncRelayCommand(CopyLogsAsync, CanCopyLogs);
         ClearLogsCommand = new RelayCommand(ClearLogs, CanClearLogs);
         OpenBacpacFolderCommand = new AsyncRelayCommand(OpenBacpacFolderAsync, CanOpenBacpacFolder);
+
+        foreach (var recentServer in _recentHistoryService.GetRecentServers())
+        {
+            RecentServers.Add(recentServer);
+        }
+
+        foreach (var recentBacpacFile in _recentHistoryService.GetRecentBacpacFiles())
+        {
+            RecentBacpacFiles.Add(recentBacpacFile);
+        }
     }
 
     partial void OnCreateNewDatabaseChanged(bool value)
@@ -292,6 +311,7 @@ public partial class RestoreViewModel : ObservableObject
             }
 
             BacpacPath = filePath;
+            RememberBacpacFile(filePath);
             AppendHighlight("Bacpac file selected.");
         }
         catch (OperationCanceledException)
@@ -330,6 +350,7 @@ public partial class RestoreViewModel : ObservableObject
         }
 
         IsLoadingDatabases = true;
+        RememberServer(Server);
 
         try
         {
@@ -403,6 +424,8 @@ public partial class RestoreViewModel : ObservableObject
         }
 
         var connectionString = SqlPackageService.BuildSqlAuthConnectionString(Server, Username, Password, targetDatabase);
+        RememberServer(Server);
+        RememberBacpacFile(BacpacPath);
 
         _cancellationTokenSource = new CancellationTokenSource();
         ResetOperationProgress("Preparing restore...");
@@ -486,6 +509,7 @@ public partial class RestoreViewModel : ObservableObject
         }
 
         var connectionString = SqlPackageService.BuildSqlAuthConnectionString(Server, Username, Password, "master");
+        RememberServer(Server);
 
         IsTestingConnection = true;
         StatusMessage = "Testing connection...";
@@ -613,6 +637,59 @@ public partial class RestoreViewModel : ObservableObject
         IsOperationProgressIndeterminate = false;
         var operationName = match.Groups[1].Value;
         OperationProgressStep = $"Processing {operationName}...";
+    }
+
+    private void RememberServer(string server)
+    {
+        var normalized = server.Trim();
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            return;
+        }
+
+        _recentHistoryService.AddRecentServer(normalized);
+        UpsertRecentItem(RecentServers, normalized);
+    }
+
+    private void RememberBacpacFile(string bacpacPath)
+    {
+        var normalized = bacpacPath.Trim();
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            return;
+        }
+
+        _recentHistoryService.AddRecentBacpacFile(normalized);
+        UpsertRecentItem(RecentBacpacFiles, normalized);
+    }
+
+    private static void UpsertRecentItem(ObservableCollection<string> list, string value)
+    {
+        var existingIndex = -1;
+        for (var i = 0; i < list.Count; i++)
+        {
+            if (string.Equals(list[i], value, StringComparison.OrdinalIgnoreCase))
+            {
+                existingIndex = i;
+                break;
+            }
+        }
+
+        if (existingIndex == 0)
+        {
+            return;
+        }
+
+        if (existingIndex > 0)
+        {
+            list.RemoveAt(existingIndex);
+        }
+
+        list.Insert(0, value);
+        if (list.Count > 12)
+        {
+            list.RemoveAt(list.Count - 1);
+        }
     }
 
     private static string GetDatabaseNameFromBacpacPath(string bacpacPath)

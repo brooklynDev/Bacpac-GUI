@@ -24,6 +24,7 @@ public partial class BackupViewModel : ObservableObject
     private readonly ISqlPackageService _sqlPackageService;
     private readonly IFolderPickerService _folderPickerService;
     private readonly IUserInteractionService _userInteractionService;
+    private readonly IRecentHistoryService _recentHistoryService;
     private CancellationTokenSource? _cancellationTokenSource;
     private DateTime _lastHighlightTimestampUtc = DateTime.UtcNow;
 
@@ -76,6 +77,9 @@ public partial class BackupViewModel : ObservableObject
     private string logOutput = string.Empty;
 
     [ObservableProperty]
+    private ObservableCollection<string> recentServers = new();
+
+    [ObservableProperty]
     private ObservableCollection<string> activityHighlights = new();
 
     [ObservableProperty]
@@ -109,11 +113,13 @@ public partial class BackupViewModel : ObservableObject
     public BackupViewModel(
         ISqlPackageService sqlPackageService,
         IFolderPickerService folderPickerService,
-        IUserInteractionService userInteractionService)
+        IUserInteractionService userInteractionService,
+        IRecentHistoryService recentHistoryService)
     {
         _sqlPackageService = sqlPackageService;
         _folderPickerService = folderPickerService;
         _userInteractionService = userInteractionService;
+        _recentHistoryService = recentHistoryService;
 
         LoadDatabasesCommand = new AsyncRelayCommand(LoadDatabasesAsync, CanLoadDatabases);
         BrowseOutputPathCommand = new AsyncRelayCommand(BrowseOutputPathAsync, CanBrowseOutputPath);
@@ -123,6 +129,11 @@ public partial class BackupViewModel : ObservableObject
         CopyLogsCommand = new AsyncRelayCommand(CopyLogsAsync, CanCopyLogs);
         ClearLogsCommand = new RelayCommand(ClearLogs, CanClearLogs);
         OpenOutputFolderCommand = new AsyncRelayCommand(OpenOutputFolderAsync, CanOpenOutputFolder);
+
+        foreach (var recentServer in _recentHistoryService.GetRecentServers())
+        {
+            RecentServers.Add(recentServer);
+        }
     }
 
     partial void OnIsRunningChanged(bool value)
@@ -257,6 +268,7 @@ public partial class BackupViewModel : ObservableObject
         }
 
         IsLoadingDatabases = true;
+        RememberServer(Server);
 
         try
         {
@@ -382,6 +394,7 @@ public partial class BackupViewModel : ObservableObject
 
             dbName = SelectedDatabase;
             connectionString = SqlPackageService.BuildSqlAuthConnectionString(Server, Username, Password, SelectedDatabase);
+            RememberServer(Server);
         }
 
         var resolvedOutputPath = PrepareBackupOutputPath(OutputPath, dbName);
@@ -492,6 +505,7 @@ public partial class BackupViewModel : ObservableObject
             }
 
             connectionString = SqlPackageService.BuildSqlAuthConnectionString(Server, Username, Password, "master");
+            RememberServer(Server);
         }
 
         IsTestingConnection = true;
@@ -643,6 +657,43 @@ public partial class BackupViewModel : ObservableObject
         IsOperationProgressIndeterminate = false;
         var operationName = match.Groups[1].Value;
         OperationProgressStep = $"Processing {operationName}...";
+    }
+
+    private void RememberServer(string server)
+    {
+        var normalized = server.Trim();
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            return;
+        }
+
+        _recentHistoryService.AddRecentServer(normalized);
+
+        var existingIndex = -1;
+        for (var i = 0; i < RecentServers.Count; i++)
+        {
+            if (string.Equals(RecentServers[i], normalized, StringComparison.OrdinalIgnoreCase))
+            {
+                existingIndex = i;
+                break;
+            }
+        }
+
+        if (existingIndex == 0)
+        {
+            return;
+        }
+
+        if (existingIndex > 0)
+        {
+            RecentServers.RemoveAt(existingIndex);
+        }
+
+        RecentServers.Insert(0, normalized);
+        if (RecentServers.Count > 12)
+        {
+            RecentServers.RemoveAt(RecentServers.Count - 1);
+        }
     }
 
     private static string SanitizeFileName(string value)
