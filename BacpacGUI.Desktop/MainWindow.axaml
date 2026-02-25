@@ -319,11 +319,13 @@
                                 BorderBrush="#FFC6DEFF"
                                 BorderThickness="2">
                             <Path x:Name="ModeToggleCheck"
-                                  Data="M 3 9 L 7 13 L 15 5"
+                                  Data="M 1 6 L 4.5 9.5 L 11 3"
                                   Stroke="#FFF8FCFF"
                                   StrokeThickness="2.2"
                                   IsVisible="False"
-                                  Stretch="None"
+                                  Width="12"
+                                  Height="12"
+                                  Stretch="Uniform"
                                   HorizontalAlignment="Center"
                                   VerticalAlignment="Center" />
                         </Border>
