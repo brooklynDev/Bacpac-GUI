@@ -127,14 +127,20 @@
             <Setter Property="Padding" Value="14,8" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Foreground" Value="#FFF5F8FF" />
+            <Setter Property="Background" Value="#FF223459" />
+            <Setter Property="BorderBrush" Value="#FF3A5788" />
             <Setter Property="BorderThickness" Value="1" />
         </Style>
         <Style Selector="Button AccessText">
             <Setter Property="Foreground" Value="#FFF5F8FF" />
         </Style>
         <Style Selector="Button:pointerover">
+            <Setter Property="Background" Value="#FF29446F" />
             <Setter Property="Foreground" Value="#FFFFFFFF" />
             <Setter Property="BorderBrush" Value="#FF78AEDD" />
+        </Style>
+        <Style Selector="Button:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#FF29446F" />
         </Style>
         <Style Selector="Button:pointerover AccessText">
             <Setter Property="Foreground" Value="#FFFFFFFF" />
@@ -176,6 +182,9 @@
             <Setter Property="Foreground" Value="#FFF7FFFC" />
             <Setter Property="BorderBrush" Value="#FF58E2C0" />
         </Style>
+        <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#FF3AB89B" />
+        </Style>
         <Style Selector="Button.primary:disabled">
             <Setter Property="Foreground" Value="#FFEFFFFA" />
             <Setter Property="Background" Value="#FF4D8A7D" />
@@ -198,6 +207,9 @@
             <Setter Property="BorderBrush" Value="#FFACFFEF" />
             <Setter Property="Foreground" Value="#FFFFFFFF" />
         </Style>
+        <Style Selector="Button.startAction:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#FF30E2C1" />
+        </Style>
         <Style Selector="Button.startAction:disabled">
             <Setter Property="Background" Value="#FF4D8A7D" />
             <Setter Property="BorderBrush" Value="#FF91D1C3" />
@@ -219,6 +231,9 @@
             <Setter Property="Foreground" Value="#FFF2F7FF" />
             <Setter Property="BorderBrush" Value="#FF5885C2" />
         </Style>
+        <Style Selector="Button.secondary:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#FF29446F" />
+        </Style>
         <Style Selector="Button.secondary:disabled">
             <Setter Property="Foreground" Value="#FFD8E5FF" />
             <Setter Property="Background" Value="#80506A92" />
@@ -239,6 +254,9 @@
             <Setter Property="Background" Value="#FF3A2951" />
             <Setter Property="Foreground" Value="#FFF6EEFF" />
             <Setter Property="BorderBrush" Value="#FF8362B0" />
+        </Style>
+        <Style Selector="Button.neutral:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#FF3A2951" />
         </Style>
         <Style Selector="Button.neutral:disabled">
             <Setter Property="Foreground" Value="#FFE5D9F7" />
@@ -265,6 +283,9 @@
             <Setter Property="BorderBrush" Value="#FF72A3DF" />
             <Setter Property="Foreground" Value="#FFFFFFFF" />
         </Style>
+        <Style Selector="Button.icon:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#FF305181" />
+        </Style>
         <Style Selector="CheckBox">
             <Setter Property="Foreground" Value="#FFEAF1FF" />
             <Setter Property="FontWeight" Value="SemiBold" />
@@ -286,41 +307,58 @@
         </Style>
         <Style Selector="CheckBox.modeToggle">
             <Setter Property="Foreground" Value="#FFEAF1FF" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                        <Border x:Name="ModeToggleBox"
+                                Width="18"
+                                Height="18"
+                                VerticalAlignment="Center"
+                                CornerRadius="4"
+                                Background="#FF35517F"
+                                BorderBrush="#FFC6DEFF"
+                                BorderThickness="2">
+                            <Path x:Name="ModeToggleCheck"
+                                  Data="M 3 9 L 7 13 L 15 5"
+                                  Stroke="#FFF8FCFF"
+                                  StrokeThickness="2.2"
+                                  IsVisible="False"
+                                  Stretch="None"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center" />
+                        </Border>
+                        <ContentPresenter Grid.Column="1"
+                                          VerticalAlignment="Center"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
         </Style>
         <Style Selector="CheckBox.modeToggle:pointerover">
             <Setter Property="Foreground" Value="#FFEAF1FF" />
         </Style>
-        <Style Selector="CheckBox.modeToggle /template/ Border#checkBoxBorder">
+        <Style Selector="CheckBox.modeToggle /template/ Border#ModeToggleBox">
             <Setter Property="Background" Value="#FF35517F" />
             <Setter Property="BorderBrush" Value="#FFC6DEFF" />
             <Setter Property="BorderThickness" Value="2" />
             <Setter Property="CornerRadius" Value="4" />
         </Style>
-        <Style Selector="CheckBox.modeToggle:pointerover /template/ Border#checkBoxBorder">
+        <Style Selector="CheckBox.modeToggle:pointerover /template/ Border#ModeToggleBox">
             <Setter Property="Background" Value="#FF3E6196" />
             <Setter Property="BorderBrush" Value="#FFE2F0FF" />
         </Style>
-        <Style Selector="CheckBox.modeToggle:checked /template/ Border#checkBoxBorder">
+        <Style Selector="CheckBox.modeToggle:checked /template/ Border#ModeToggleBox">
             <Setter Property="Background" Value="#FF3A8FD9" />
             <Setter Property="BorderBrush" Value="#FFCCECFF" />
         </Style>
-        <Style Selector="CheckBox /template/ Border#checkBoxBorder">
-            <Setter Property="Background" Value="#FF27406A" />
-            <Setter Property="BorderBrush" Value="#FFA2C5F5" />
-            <Setter Property="BorderThickness" Value="2" />
-            <Setter Property="CornerRadius" Value="4" />
-        </Style>
-        <Style Selector="CheckBox:pointerover /template/ Border#checkBoxBorder">
-            <Setter Property="Background" Value="#FF35517F" />
-            <Setter Property="BorderBrush" Value="#FFC6DEFF" />
-        </Style>
-        <Style Selector="CheckBox:checked /template/ Border#checkBoxBorder">
-            <Setter Property="Background" Value="#FF2E7BC4" />
-            <Setter Property="BorderBrush" Value="#FF9DD6FF" />
-        </Style>
-        <Style Selector="CheckBox:checked /template/ Path#checkMark">
+        <Style Selector="CheckBox.modeToggle:checked /template/ Path#ModeToggleCheck">
+            <Setter Property="IsVisible" Value="True" />
             <Setter Property="Stroke" Value="#FFF8FCFF" />
             <Setter Property="StrokeThickness" Value="2.2" />
+        </Style>
+        <Style Selector="CheckBox.modeToggle:indeterminate /template/ Path#ModeToggleCheck">
+            <Setter Property="IsVisible" Value="True" />
         </Style>
         <Style Selector="Button.compact">
             <Setter Property="Padding" Value="10,6" />
